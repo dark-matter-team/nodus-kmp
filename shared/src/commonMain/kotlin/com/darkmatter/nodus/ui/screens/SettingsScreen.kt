@@ -16,7 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -34,6 +37,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             }
             OutlinedButton(onClick = { /* TODO: видалити акаунт */ }) {
                 Text("Видалити акаунт")
+            }
+            // На Desktop немає системної кнопки "Назад", тож вона потрібна в інтерфейсі
+            OutlinedButton(onClick = onBack) {
+                Text("Назад")
             }
         }
     }

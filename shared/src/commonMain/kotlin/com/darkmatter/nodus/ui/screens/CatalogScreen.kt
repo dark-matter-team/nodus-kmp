@@ -3,6 +3,7 @@ package com.darkmatter.nodus.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +30,7 @@ import com.darkmatter.nodus.data.model.PublicRoadmapSummaryDto
 
 @Composable
 fun CatalogScreen(
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CatalogViewModel = viewModel { CatalogViewModel() },
 ) {
@@ -40,7 +43,16 @@ fun CatalogScreen(
                 .safeContentPadding()
                 .padding(16.dp),
         ) {
-            Text("Каталог", style = MaterialTheme.typography.headlineMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Каталог", style = MaterialTheme.typography.headlineMedium)
+                OutlinedButton(onClick = onOpenSettings) {
+                    Text("Налаштування")
+                }
+            }
             Spacer(Modifier.height(16.dp))
 
             Box(

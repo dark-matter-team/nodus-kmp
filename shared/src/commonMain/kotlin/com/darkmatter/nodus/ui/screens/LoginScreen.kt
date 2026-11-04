@@ -15,7 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    onLoggedIn: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -25,7 +28,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
             Text("Вхід", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = { /* TODO: вхід */ }) {
+            Button(onClick = onLoggedIn) {
                 Text("Увійти")
             }
         }
