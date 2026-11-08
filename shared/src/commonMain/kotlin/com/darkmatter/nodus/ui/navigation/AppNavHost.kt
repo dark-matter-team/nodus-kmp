@@ -1,25 +1,44 @@
 package com.darkmatter.nodus.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.darkmatter.nodus.core.di.AppContainer
+import com.darkmatter.nodus.core.session.SessionManager
 import com.darkmatter.nodus.ui.screens.CatalogScreen
 import com.darkmatter.nodus.ui.screens.SettingsScreen
 import com.darkmatter.nodus.ui.screens.auth.ForgotPasswordScreen
 import com.darkmatter.nodus.ui.screens.auth.LoginScreen
 import com.darkmatter.nodus.ui.screens.auth.RegisterScreen
 import com.darkmatter.nodus.ui.screens.auth.ResetPasswordScreen
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 
 @Composable
-fun AppNavHost() {
+fun AppNavHost(
+    sessionManager: SessionManager = AppContainer.sessionManager,
+) {
     val navController = rememberNavController()
+
+    // Обчислюється один раз: зміна стартового екрана під час роботи перебудувала б весь граф
+    val startDestination = remember { resolveStartDestination(sessionManager.isLoggedIn.value) }
+
+    // Вихід з акаунта або 401 на будь-якому екрані: сесія завершилась, ведемо на вхід
+    LaunchedEffect(navController) {
+        sessionManager.isLoggedIn
+            .drop(1)
+            .filter { isLoggedIn -> !isLoggedIn }
+            .collect { navController.navigateToLogin() }
+    }
 
     NavHost(
         navController = navController,
-        startDestination = LoginRoute,
+        startDestination = startDestination,
     ) {
         composable<LoginRoute> {
             LoginScreen(
@@ -64,6 +83,20 @@ fun AppNavHost() {
                 onBack = { navController.popBackStack() },
             )
         }
+    }
+}
+
+/**
+ * Стартовий екран без мережевих запитів, щоб застосунок запускався офлайн.
+ * Коли з'явиться онбординг (KNU-35), умову "слайди ще не показували" треба додати лише тут.
+ */
+private fun resolveStartDestination(isLoggedIn: Boolean): Any =
+    if (isLoggedIn) CatalogRoute else LoginRoute
+
+/** Очищає весь стек: після виходу "назад" не має повертати на захищені екрани. */
+private fun NavHostController.navigateToLogin() {
+    navigate(LoginRoute) {
+        popUpTo(graph.id) { inclusive = true }
     }
 }
 
