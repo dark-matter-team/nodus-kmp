@@ -2,6 +2,7 @@ package com.darkmatter.nodus.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.darkmatter.nodus.core.auth.GoogleSignInProvider
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.repository.AuthRepository
@@ -18,9 +19,13 @@ data class LoginUiState(
     val loginError: String? = null,
     val passwordError: String? = null,
     val isLoading: Boolean = false,
+    val isGoogleLoading: Boolean = false,
     val errorMessage: String? = null,
     val isLoggedIn: Boolean = false,
-)
+) {
+    /** Поки йде будь-який запит, форма і обидві кнопки заблоковані. */
+    val isBusy: Boolean get() = isLoading || isGoogleLoading
+}
 
 class LoginViewModel(
     private val repository: AuthRepository = AppContainer.authRepository,
@@ -37,7 +42,7 @@ class LoginViewModel(
 
     fun submit() {
         val state = _uiState.value
-        if (state.isLoading) return
+        if (state.isBusy) return
 
         val loginError = AuthValidation.validateLogin(state.login)
         val passwordError = AuthValidation.validateLoginPassword(state.password)
@@ -51,6 +56,20 @@ class LoginViewModel(
             when (val result = repository.login(state.login, state.password)) {
                 is ApiResult.Success -> _uiState.update { it.copy(isLoading = false, isLoggedIn = true) }
                 is ApiResult.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+            }
+        }
+    }
+
+    /** [provider] прив'язаний до екрана (Activity), тому передається у виклик, а не зберігається. */
+    fun signInWithGoogle(provider: GoogleSignInProvider) {
+        if (_uiState.value.isBusy) return
+
+        _uiState.update { it.copy(isGoogleLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            when (val result = repository.signInWithGoogle(provider)) {
+                null -> _uiState.update { it.copy(isGoogleLoading = false) }
+                is ApiResult.Success -> _uiState.update { it.copy(isGoogleLoading = false, isLoggedIn = true) }
+                is ApiResult.Error -> _uiState.update { it.copy(isGoogleLoading = false, errorMessage = result.message) }
             }
         }
     }

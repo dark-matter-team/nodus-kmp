@@ -35,7 +35,11 @@ class AuthRepository(
     suspend fun register(email: String, nickname: String, password: String): ApiResult<UserDto> =
         authCall { api.register(RegisterRequest(email.trim(), password, nickname.trim())) }
 
-    suspend fun googleLogin(idToken: String): ApiResult<UserDto> =
+    /**
+     * Обмінює Google ID token на токен бекенда. Новий користувач створюється автоматично.
+     * 401 "Недійсний Google токен" повертається як ApiResult.Error з текстом бекенда.
+     */
+    suspend fun loginWithGoogle(idToken: String): ApiResult<UserDto> =
         authCall { api.googleLogin(GoogleAuthRequest(idToken)) }
 
     suspend fun forgotPassword(email: String): ApiResult<String?> =

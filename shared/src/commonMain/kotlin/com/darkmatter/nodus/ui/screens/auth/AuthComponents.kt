@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 /** Спільний каркас auth-екранів: заголовок і колонка з прокруткою, обмежена по ширині для Desktop. */
@@ -118,22 +120,51 @@ internal fun PasswordField(
     )
 }
 
-/** Кнопка з індикатором завантаження всередині; поки йде запит, натиснути її повторно не можна. */
+/**
+ * Кнопка з індикатором завантаження всередині; поки йде запит, натиснути її повторно не можна.
+ * [enabled] = false блокує кнопку, поки виконується інший запит на цьому екрані.
+ */
 @Composable
 internal fun SubmitButton(
     text: String,
     isLoading: Boolean,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     Button(
         onClick = onClick,
-        enabled = !isLoading,
+        enabled = enabled && !isLoading,
         modifier = Modifier.fillMaxWidth(),
     ) {
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
         } else {
             Text(text)
+        }
+    }
+}
+
+@Composable
+internal fun GoogleSignInButton(
+    isLoading: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = "або",
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled && !isLoading,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        } else {
+            Text("Увійти через Google")
         }
     }
 }
