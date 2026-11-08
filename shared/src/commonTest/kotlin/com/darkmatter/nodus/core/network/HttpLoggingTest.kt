@@ -17,12 +17,14 @@ class HttpLoggingTest {
     private val newPassword = "Brand-New-Pass-77"
     private val token = "eyJhbGciOiJIUzI1NiJ9.secret-payload.secret-signature"
     private val resetCode = "924615"
+    private val googleIdToken = "google-id-token-secret-value"
 
     @Test
     fun logsContainNoPasswordsTokensOrResetCodes() = runBlocking {
         val env = AuthTestEnvironment { request ->
             when (request.url.encodedPath) {
-                "/api/auth/login", "/api/auth/register" -> FakeResponse(ok, authResponseJson(token))
+                "/api/auth/login", "/api/auth/register", "/api/auth/google" ->
+                    FakeResponse(ok, authResponseJson(token))
                 "/api/users/me" -> FakeResponse(ok, userJson())
                 else -> FakeResponse(ok, """{"message":"ok"}""")
             }
@@ -33,10 +35,11 @@ class HttpLoggingTest {
         env.repository.getCurrentUser()
         env.repository.forgotPassword("test1@example.com")
         env.repository.resetPassword("test1@example.com", resetCode, newPassword)
+        env.repository.loginWithGoogle(googleIdToken)
 
         val log = env.logs.joinToString("\n")
         assertTrue(log.contains("/api/users/me"), "логування має працювати:\n$log")
-        listOf(password, newPassword, token, resetCode, "secret-payload").forEach { secret ->
+        listOf(password, newPassword, token, resetCode, "secret-payload", googleIdToken).forEach { secret ->
             assertFalse(log.contains(secret), "у логах знайдено '$secret':\n$log")
         }
     }

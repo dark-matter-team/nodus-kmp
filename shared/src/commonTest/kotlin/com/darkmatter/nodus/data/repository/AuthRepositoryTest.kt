@@ -9,6 +9,7 @@ import com.darkmatter.nodus.testutil.bodyText
 import com.darkmatter.nodus.testutil.errorJson
 import com.darkmatter.nodus.testutil.ok
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.encodedPath
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
@@ -105,6 +106,33 @@ class AuthRepositoryTest {
 
         assertEquals("newbie", (result as ApiResult.Success).data.nickname)
         assertEquals("token-register", env.tokenStorage.getToken())
+    }
+
+    @Test
+    fun googleLoginSendsIdTokenAndSavesBackendToken() = runBlocking {
+        val env = AuthTestEnvironment { FakeResponse(ok, authResponseJson("token-google")) }
+
+        val result = env.repository.loginWithGoogle("google-id-token")
+
+        assertIs<ApiResult.Success<*>>(result)
+        val request = env.engine.requests.single()
+        assertEquals("/api/auth/google", request.url.encodedPath)
+        val body = Json.parseToJsonElement(request.bodyText()).jsonObject
+        assertEquals("google-id-token", body["idToken"]?.jsonPrimitive?.content)
+        assertEquals("token-google", env.tokenStorage.getToken())
+        assertTrue(env.sessionManager.isLoggedIn.value)
+    }
+
+    @Test
+    fun invalidGoogleTokenShowsBackendMessage() = runBlocking {
+        val env = AuthTestEnvironment {
+            FakeResponse(HttpStatusCode.Unauthorized, errorJson("Недійсний Google токен"))
+        }
+
+        val result = env.repository.loginWithGoogle("bad-id-token")
+
+        assertEquals(ApiResult.Error("Недійсний Google токен", 401), result)
+        assertNull(env.tokenStorage.getToken())
     }
 
     @Test
