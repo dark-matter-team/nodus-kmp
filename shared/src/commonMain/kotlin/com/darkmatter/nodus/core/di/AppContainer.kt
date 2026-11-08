@@ -17,7 +17,7 @@ object AppContainer {
 
     val sessionManager by lazy { SessionManager(tokenStorage) }
 
-    private val httpClient by lazy { createHttpClient() }
+    private val httpClient by lazy { createHttpClient(sessionManager) }
 
     private val roadmapApi by lazy { RoadmapApi(httpClient) }
 
