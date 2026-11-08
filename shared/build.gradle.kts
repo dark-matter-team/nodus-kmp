@@ -49,6 +49,11 @@ kotlin {
 
             // Рушій Ktor для Android
             implementation(libs.ktor.client.okhttp)
+
+            // Вхід через Google (Credential Manager)
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.playServicesAuth)
+            implementation(libs.googleid)
         }
 
         jvmMain.dependencies {

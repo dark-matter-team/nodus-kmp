@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -19,6 +20,14 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
+// Web client ID для Google-входу береться з local.properties (не в git).
+// Без ключа збірка проходить, а Google-вхід показує, що він не налаштований.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val googleWebClientId: String = localProperties.getProperty("google.webClientId", "").trim()
+
 android {
     namespace = "com.darkmatter.nodus"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -29,6 +38,8 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
     packaging {
         resources {
@@ -50,5 +61,6 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
