@@ -1,12 +1,14 @@
 package com.darkmatter.nodus.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.darkmatter.nodus.ui.screens.CatalogScreen
-import com.darkmatter.nodus.ui.screens.LoginScreen
 import com.darkmatter.nodus.ui.screens.SettingsScreen
+import com.darkmatter.nodus.ui.screens.auth.LoginScreen
+import com.darkmatter.nodus.ui.screens.auth.RegisterScreen
 
 @Composable
 fun AppNavHost() {
@@ -18,12 +20,16 @@ fun AppNavHost() {
     ) {
         composable<LoginRoute> {
             LoginScreen(
-                onLoggedIn = {
-                    navController.navigate(CatalogRoute) {
-                        // Прибираємо екран входу зі стеку, щоб "назад" не повертало на нього
-                        popUpTo<LoginRoute> { inclusive = true }
-                    }
-                },
+                onLoggedIn = { navController.navigateToMain() },
+                onOpenRegister = { navController.navigate(RegisterRoute) },
+                onForgotPassword = { /* TODO KNU-31: екран відновлення пароля */ },
+            )
+        }
+
+        composable<RegisterRoute> {
+            RegisterScreen(
+                onRegistered = { navController.navigateToMain() },
+                onOpenLogin = { navController.popBackStack() },
             )
         }
 
@@ -38,5 +44,12 @@ fun AppNavHost() {
                 onBack = { navController.popBackStack() },
             )
         }
+    }
+}
+
+/** Після входу чи реєстрації auth-екрани прибираються зі стеку, щоб "назад" не повертало на них. */
+private fun NavHostController.navigateToMain() {
+    navigate(CatalogRoute) {
+        popUpTo<LoginRoute> { inclusive = true }
     }
 }
