@@ -9,6 +9,12 @@ data object LoginRoute
 data object RegisterRoute
 
 @Serializable
+data object ForgotPasswordRoute
+
+@Serializable
+data class ResetPasswordRoute(val email: String)
+
+@Serializable
 data object CatalogRoute
 
 @Serializable

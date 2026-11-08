@@ -5,10 +5,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.darkmatter.nodus.ui.screens.CatalogScreen
 import com.darkmatter.nodus.ui.screens.SettingsScreen
+import com.darkmatter.nodus.ui.screens.auth.ForgotPasswordScreen
 import com.darkmatter.nodus.ui.screens.auth.LoginScreen
 import com.darkmatter.nodus.ui.screens.auth.RegisterScreen
+import com.darkmatter.nodus.ui.screens.auth.ResetPasswordScreen
 
 @Composable
 fun AppNavHost() {
@@ -22,7 +25,7 @@ fun AppNavHost() {
             LoginScreen(
                 onLoggedIn = { navController.navigateToMain() },
                 onOpenRegister = { navController.navigate(RegisterRoute) },
-                onForgotPassword = { /* TODO KNU-31: екран відновлення пароля */ },
+                onForgotPassword = { navController.navigate(ForgotPasswordRoute) },
             )
         }
 
@@ -30,6 +33,23 @@ fun AppNavHost() {
             RegisterScreen(
                 onRegistered = { navController.navigateToMain() },
                 onOpenLogin = { navController.popBackStack() },
+            )
+        }
+
+        composable<ForgotPasswordRoute> {
+            ForgotPasswordScreen(
+                onCodeSent = { email -> navController.navigate(ResetPasswordRoute(email)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<ResetPasswordRoute> { entry ->
+            val route = entry.toRoute<ResetPasswordRoute>()
+            ResetPasswordScreen(
+                email = route.email,
+                // Повертаємось на вже наявний у стеку екран входу, прибираючи екрани відновлення
+                onDone = { navController.popBackStack<LoginRoute>(inclusive = false) },
+                onBack = { navController.popBackStack() },
             )
         }
 
