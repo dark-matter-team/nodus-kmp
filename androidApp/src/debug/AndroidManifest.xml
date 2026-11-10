@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        Лише для debug: з Android 17 (targetSdk 37) доступ до приватних адрес, зокрема
+        локального бекенда на 10.0.2.2, потребує цього runtime-дозволу. Без нього з'єднання
+        мовчки відкидаються і запити падають за таймаутом. Продакшн-бекенд публічний,
+        тому в release дозвіл не потрібен.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+</manifest>
