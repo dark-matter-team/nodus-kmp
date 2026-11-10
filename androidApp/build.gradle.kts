@@ -28,6 +28,17 @@ val localProperties = Properties().apply {
 }
 val googleWebClientId: String = localProperties.getProperty("google.webClientId", "").trim()
 
+// Неправильний формат (наприклад, з "https://") Google відхиляє з "[28444] Developer console is not set up correctly",
+// тому зупиняємо збірку одразу з зрозумілим поясненням
+if (googleWebClientId.isNotEmpty() &&
+    !Regex("""^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$""").matches(googleWebClientId)
+) {
+    throw GradleException(
+        "local.properties: google.webClientId має бути саме Web client ID без схеми й пробілів, " +
+            "у форматі <цифри>-<рядок>.apps.googleusercontent.com",
+    )
+}
+
 android {
     namespace = "com.darkmatter.nodus"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
