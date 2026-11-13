@@ -3,6 +3,9 @@ package com.darkmatter.nodus.ui.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
+data object OnboardingRoute
+
+@Serializable
 data object LoginRoute
 
 @Serializable

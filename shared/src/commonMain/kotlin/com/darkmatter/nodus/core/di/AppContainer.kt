@@ -6,6 +6,7 @@ import com.darkmatter.nodus.data.api.AuthApi
 import com.darkmatter.nodus.data.api.RoadmapApi
 import com.darkmatter.nodus.data.repository.AuthRepository
 import com.darkmatter.nodus.data.repository.RoadmapRepository
+import com.darkmatter.nodus.data.storage.OnboardingStorage
 import com.darkmatter.nodus.data.storage.TokenStorage
 import com.russhwolf.settings.Settings
 
@@ -26,4 +27,6 @@ object AppContainer {
     val roadmapRepository by lazy { RoadmapRepository(roadmapApi) }
 
     val authRepository by lazy { AuthRepository(authApi, sessionManager) }
+
+    val onboardingStorage by lazy { OnboardingStorage(settings) }
 }

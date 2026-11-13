@@ -10,6 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.session.SessionManager
+import com.darkmatter.nodus.data.storage.OnboardingStorage
+import com.darkmatter.nodus.ui.onboarding.OnboardingScreen
 import com.darkmatter.nodus.ui.screens.CatalogScreen
 import com.darkmatter.nodus.ui.screens.SettingsScreen
 import com.darkmatter.nodus.ui.screens.auth.ForgotPasswordScreen
@@ -22,11 +24,17 @@ import kotlinx.coroutines.flow.filter
 @Composable
 fun AppNavHost(
     sessionManager: SessionManager = AppContainer.sessionManager,
+    onboardingStorage: OnboardingStorage = AppContainer.onboardingStorage,
 ) {
     val navController = rememberNavController()
 
     // Обчислюється один раз: зміна стартового екрана під час роботи перебудувала б весь граф
-    val startDestination = remember { resolveStartDestination(sessionManager.isLoggedIn.value) }
+    val startDestination = remember {
+        resolveStartDestination(
+            onboardingCompleted = onboardingStorage.isCompleted(),
+            isLoggedIn = sessionManager.isLoggedIn.value,
+        )
+    }
 
     // Вихід з акаунта або 401 на будь-якому екрані: сесія завершилась, ведемо на вхід
     LaunchedEffect(navController) {
@@ -40,6 +48,23 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
+        composable<OnboardingRoute> {
+            OnboardingScreen(
+                onFinished = {
+                    // Спершу зберігаємо прапорець, потім переходимо далі
+                    onboardingStorage.setCompleted()
+                    val next = resolveStartDestination(
+                        onboardingCompleted = true,
+                        isLoggedIn = sessionManager.isLoggedIn.value,
+                    )
+                    navController.navigate(next) {
+                        // Прибираємо онбординг зі стеку, щоб "назад" не повертало на слайди
+                        popUpTo<OnboardingRoute> { inclusive = true }
+                    }
+                },
+            )
+        }
+
         composable<LoginRoute> {
             LoginScreen(
                 onLoggedIn = { navController.navigateToMain() },
@@ -87,11 +112,14 @@ fun AppNavHost(
 }
 
 /**
- * Стартовий екран без мережевих запитів, щоб застосунок запускався офлайн.
- * Коли з'явиться онбординг (KNU-35), умову "слайди ще не показували" треба додати лише тут.
+ * Стартовий екран без мережевих запитів, щоб застосунок запускався офлайн:
+ * спершу онбординг (лише при першому запуску), потім вхід або одразу каталог, якщо є сесія.
  */
-private fun resolveStartDestination(isLoggedIn: Boolean): Any =
-    if (isLoggedIn) CatalogRoute else LoginRoute
+private fun resolveStartDestination(onboardingCompleted: Boolean, isLoggedIn: Boolean): Any = when {
+    !onboardingCompleted -> OnboardingRoute
+    isLoggedIn -> CatalogRoute
+    else -> LoginRoute
+}
 
 /** Очищає весь стек: після виходу "назад" не має повертати на захищені екрани. */
 private fun NavHostController.navigateToLogin() {
