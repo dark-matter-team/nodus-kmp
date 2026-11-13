@@ -1,6 +1,5 @@
 package com.darkmatter.nodus.ui.onboarding
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,7 +24,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.shadow.DropShadowPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -35,8 +33,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.darkmatter.nodus.ui.theme.NodusColors
@@ -45,10 +41,7 @@ import nodus.shared.generated.resources.Res
 import nodus.shared.generated.resources.ic_theme_toggle
 import nodus.shared.generated.resources.onboarding_dot_active
 import nodus.shared.generated.resources.onboarding_dot_inactive
-import nodus.shared.generated.resources.onboarding_logo
-import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Shadow as TextShadow
 import androidx.compose.ui.graphics.shadow.Shadow as BoxShadow
 
@@ -92,26 +85,6 @@ internal fun onboardingTextStyle(
             TextShadow(color = shadowColor, offset = Offset(0f, shadowOffsetY.toPx()), blurRadius = shadowBlur.toPx())
         },
     )
-}
-
-/**
- * Логотип як шар "image 2" у макеті: рамка 68×67, у ній зображення 181.69% × 103.6%
- * зі зсувом -40.91% / -3.66%, обрізане по рамці й накладене на фон у режимі lighten.
- */
-@Composable
-internal fun OnboardingLogo(modifier: Modifier = Modifier) {
-    val logo = imageResource(Res.drawable.onboarding_logo)
-    Canvas(modifier.size(68.dp, 67.dp)) {
-        // Обрізаємо через clipRect, а не clipToBounds: окремий шар зламав би змішування з фоном
-        clipRect {
-            drawImage(
-                image = logo,
-                dstOffset = IntOffset((-0.4091f * size.width).roundToInt(), (-0.0366f * size.height).roundToInt()),
-                dstSize = IntSize((1.8169f * size.width).roundToInt(), (1.036f * size.height).roundToInt()),
-                blendMode = BlendMode.Lighten,
-            )
-        }
-    }
 }
 
 /**

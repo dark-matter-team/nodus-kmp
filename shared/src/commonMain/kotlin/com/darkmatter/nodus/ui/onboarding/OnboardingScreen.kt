@@ -95,13 +95,7 @@ private fun CompactOnboarding(
     onNext: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
-        TopBar(
-            height = 77.dp,
-            logoStart = 18.dp,
-            logoTop = 10.dp,
-            iconTop = 28.dp,
-            iconEnd = 24.dp,
-        )
+        TopBar(height = 77.dp, iconTop = 28.dp, iconEnd = 24.dp)
         Spacer(Modifier.height(8.dp))
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             CompactSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = CompactSizes)
@@ -121,13 +115,7 @@ private fun ExpandedOnboarding(
     onNext: () -> Unit,
 ) {
     Box(Modifier.fillMaxSize()) {
-        TopBar(
-            height = 95.dp,
-            logoStart = 36.dp,
-            logoTop = 28.dp,
-            iconTop = 36.dp,
-            iconEnd = 32.dp,
-        )
+        TopBar(height = 95.dp, iconTop = 36.dp, iconEnd = 32.dp)
         Column(Modifier.fillMaxSize()) {
             Spacer(Modifier.height(166.dp))
             HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
@@ -141,9 +129,8 @@ private fun ExpandedOnboarding(
 }
 
 @Composable
-private fun TopBar(height: Dp, logoStart: Dp, logoTop: Dp, iconTop: Dp, iconEnd: Dp) {
+private fun TopBar(height: Dp, iconTop: Dp, iconEnd: Dp) {
     Box(Modifier.fillMaxWidth().height(height)) {
-        OnboardingLogo(Modifier.padding(start = logoStart, top = logoTop))
         ThemeToggleIcon(
             Modifier
                 .align(Alignment.TopEnd)
