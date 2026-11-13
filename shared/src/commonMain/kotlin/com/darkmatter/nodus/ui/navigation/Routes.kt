@@ -10,3 +10,6 @@ data object CatalogRoute
 
 @Serializable
 data object SettingsRoute
+
+@Serializable
+data object OnboardingRoute
