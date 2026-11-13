@@ -13,15 +13,19 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darkmatter.nodus.ui.theme.NebulaBackground
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 // Розміри з фреймів "General Onboarding N Dark Mobile" (389×874) і "General Onboarding N Dark" (1512×982)
 private val CompactSizes = OnboardingSizes(
@@ -33,6 +37,9 @@ private val CompactSizes = OnboardingSizes(
     buttonsStartPadding = 27.dp,
     buttonsEndPadding = 28.dp,
 )
+
+private val ExpandedDesignWidth = 1512.dp
+private val ExpandedDesignHeight = 982.dp
 
 private val ExpandedSizes = OnboardingSizes(
     stepFontSize = 24.sp,
@@ -66,7 +73,13 @@ fun OnboardingScreen(
             // Десктопний макет для широких вікон, мобільний для решти (зокрема телефонів у портреті)
             val isExpanded = maxWidth >= 600.dp && maxWidth > maxHeight
             if (isExpanded) {
-                ExpandedOnboarding(pagerState, isLastPage, onSkip = onFinished, onNext = onNext)
+                // Десктопний макет масштабується цілком (відступи, кнопки, шрифти) під розмір вікна,
+                // тому пропорції лишаються як у фреймі 1512×982 навіть у маленькому вікні
+                val scale = min(maxWidth / ExpandedDesignWidth, maxHeight / ExpandedDesignHeight)
+                val density = LocalDensity.current
+                CompositionLocalProvider(LocalDensity provides Density(density.density * scale, density.fontScale)) {
+                    ExpandedOnboarding(pagerState, isLastPage, onSkip = onFinished, onNext = onNext)
+                }
             } else {
                 CompactOnboarding(pagerState, isLastPage, onSkip = onFinished, onNext = onNext)
             }
