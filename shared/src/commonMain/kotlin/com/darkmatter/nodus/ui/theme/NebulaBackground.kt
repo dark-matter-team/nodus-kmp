@@ -8,12 +8,15 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import nodus.shared.generated.resources.Res
+import nodus.shared.generated.resources.nebula_stars
+import org.jetbrains.compose.resources.imageResource
+import kotlin.math.roundToInt
 
-/** Частка шейдера зірок поверх градієнта (opacity 15% у макеті). */
+/** Частка шару зірок поверх градієнта (opacity 15% у макеті). */
 private const val NEBULA_ALPHA = 0.15f
 
 private val NebulaGradientStops = arrayOf(
@@ -26,16 +29,17 @@ private val NebulaGradientStops = arrayOf(
 )
 
 /**
- * Фон з макета: еліптичний радіальний градієнт, вписаний в екран, і шейдер Nebula поверх нього.
- * Шейдер важкий, але статичний, тому фон малюється в окремий шар (Offscreen):
- * на Android він кешується як текстура і не перераховується, поки не зміниться розмір.
+ * Фон з макета: еліптичний радіальний градієнт, вписаний в екран, і шар зірок поверх нього.
+ * Зорі — це шейдер Nebula з Figma, заздалегідь відрендерений у текстуру (див. tools/nebula):
+ * рахувати його щокадру занадто дорого. Текстура вписується по висоті й центрується по ширині,
+ * як координати оригінального шейдера.
  */
 @Composable
 fun NebulaBackground(modifier: Modifier = Modifier) {
+    val stars = imageResource(Res.drawable.nebula_stars)
     Spacer(
         modifier
             .fillMaxSize()
-            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
             .drawWithCache {
                 val center = Offset(size.width / 2f, size.height / 2f)
                 val radius = size.width / 2f
@@ -44,7 +48,10 @@ fun NebulaBackground(modifier: Modifier = Modifier) {
                     center = center,
                     radius = radius,
                 )
-                val nebula = createRuntimeShader(NEBULA_SKSL, size.width, size.height)?.let(::ShaderBrush)
+                val starsHeight = size.height
+                val starsWidth = starsHeight * stars.width / stars.height
+                val starsOffset = IntOffset(((size.width - starsWidth) / 2f).roundToInt(), 0)
+                val starsSize = IntSize(starsWidth.roundToInt(), starsHeight.roundToInt())
 
                 onDrawBehind {
                     // Коло радіусом у пів ширини, розтягнуте по вертикалі до висоти екрана, дає еліпс як у Figma
@@ -55,7 +62,7 @@ fun NebulaBackground(modifier: Modifier = Modifier) {
                             size = Size(size.width, size.width),
                         )
                     }
-                    if (nebula != null) drawRect(brush = nebula, alpha = NEBULA_ALPHA)
+                    drawImage(image = stars, dstOffset = starsOffset, dstSize = starsSize, alpha = NEBULA_ALPHA)
                 }
             },
     )
