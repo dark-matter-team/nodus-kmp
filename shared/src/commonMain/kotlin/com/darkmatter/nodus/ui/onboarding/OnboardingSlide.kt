@@ -1,22 +1,42 @@
 package com.darkmatter.nodus.ui.onboarding
 
+import nodus.shared.generated.resources.Res
+import nodus.shared.generated.resources.onboarding_slide1
+import nodus.shared.generated.resources.onboarding_slide1_wide
+import nodus.shared.generated.resources.onboarding_slide2
+import nodus.shared.generated.resources.onboarding_slide2_wide
+import nodus.shared.generated.resources.onboarding_slide3
+import nodus.shared.generated.resources.onboarding_slide3_wide
+import org.jetbrains.compose.resources.DrawableResource
+
+/**
+ * [image] вертикальна ілюстрація для телефона, [wideImage] альбомна для широкого екрана.
+ * Тексти дослівно з макета Figma.
+ */
 data class OnboardingSlide(
     val title: String,
     val description: String,
+    val image: DrawableResource,
+    val wideImage: DrawableResource,
 )
 
-// TEMP: тексти тимчасові, замінити на фінальні від дизайнера
 val onboardingSlides = listOf(
     OnboardingSlide(
-        title = "Describe your goal",
+        title = "DESCRIBE YOUR GOAL",
         description = "Describe any goal, and AI will generate your personal skill path.",
+        image = Res.drawable.onboarding_slide1,
+        wideImage = Res.drawable.onboarding_slide1_wide,
     ),
     OnboardingSlide(
-        title = "Get your skill tree",
-        description = "Your goal becomes a tree of steps. Complete a step to unlock the next ones.",
+        title = "GET YOUR SKILL TREE",
+        description = "Break down your global goal into clear, step-by-step interactive nodes.",
+        image = Res.drawable.onboarding_slide2,
+        wideImage = Res.drawable.onboarding_slide2_wide,
     ),
     OnboardingSlide(
-        title = "Track your progress",
-        description = "Check off micro-steps, finish nodes and watch your tree grow.",
+        title = "LEVEL UP EVERY DAY",
+        description = "Boost your RPG stars, maintain daily streaks, and unblock cosmic rewards.",
+        image = Res.drawable.onboarding_slide3,
+        wideImage = Res.drawable.onboarding_slide3_wide,
     ),
 )
