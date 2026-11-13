@@ -13,11 +13,6 @@ class OnboardingStorage(
         settings.putBoolean(KEY_COMPLETED, true)
     }
 
-    // TEMP: для повторних перевірок, видалити перед PR
-    fun reset() {
-        settings.putBoolean(KEY_COMPLETED, false)
-    }
-
     private companion object {
         const val KEY_COMPLETED = "onboarding_completed"
     }

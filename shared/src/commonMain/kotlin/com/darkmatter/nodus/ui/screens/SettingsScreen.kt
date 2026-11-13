@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.darkmatter.nodus.core.di.AppContainer
 
 @Composable
 fun SettingsScreen(
@@ -42,10 +41,6 @@ fun SettingsScreen(
             // На Desktop немає системної кнопки "Назад", тож вона потрібна в інтерфейсі
             OutlinedButton(onClick = onBack) {
                 Text("Назад")
-            }
-            // TEMP: видалити перед PR
-            OutlinedButton(onClick = { AppContainer.onboardingStorage.reset() }) {
-                Text("Скинути онбординг")
             }
         }
     }
