@@ -2,7 +2,6 @@ package com.darkmatter.nodus.ui.screens.auth
 
 import com.darkmatter.nodus.core.auth.GoogleSignInProvider
 import com.darkmatter.nodus.core.auth.GoogleSignInResult
-import com.darkmatter.nodus.core.auth.UnsupportedGoogleSignInProvider
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.testutil.AuthTestEnvironment
 import com.darkmatter.nodus.testutil.FakeResponse
@@ -37,7 +36,7 @@ class GoogleSignInFlowTest {
     @Test
     fun providerErrorIsShownAndSendsNothing() = runBlocking {
         val env = AuthTestEnvironment { FakeResponse(ok, authResponseJson("token")) }
-        val message = "На пристрої немає Google-акаунта. Додайте акаунт у налаштуваннях пристрою і спробуйте ще раз"
+        val message = "No Google account on this device. Add one in the device settings and try again"
 
         val result = env.repository.signInWithGoogle(FakeGoogleSignInProvider(GoogleSignInResult.Error(message)))
 
@@ -55,12 +54,6 @@ class GoogleSignInFlowTest {
 
         assertIs<ApiResult.Success<*>>(result)
         assertEquals("token-google", env.tokenStorage.getToken())
-    }
-
-    @Test
-    fun unsupportedPlatformReturnsError() = runBlocking<Unit> {
-        assertFalse(UnsupportedGoogleSignInProvider.isSupported)
-        assertIs<GoogleSignInResult.Error>(UnsupportedGoogleSignInProvider.getIdToken())
     }
 
     @Test

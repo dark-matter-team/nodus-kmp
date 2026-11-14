@@ -38,7 +38,7 @@ class AndroidGoogleSignInProvider(
 
     override suspend fun getIdToken(): GoogleSignInResult {
         if (webClientId.isBlank()) {
-            return GoogleSignInResult.Error("Вхід через Google не налаштовано: не задано Web client ID")
+            return GoogleSignInResult.Error("Google sign-in is not configured: web client ID is missing")
         }
 
         val googleIdOption = GetGoogleIdOption.Builder()
@@ -58,18 +58,16 @@ class AndroidGoogleSignInProvider(
             ) {
                 GoogleSignInResult.Success(GoogleIdTokenCredential.createFrom(credential.data).idToken)
             } else {
-                GoogleSignInResult.Error("Отримано непідтримуваний тип облікових даних")
+                GoogleSignInResult.Error("Google sign-in failed: unsupported credential type")
             }
         } catch (e: GetCredentialCancellationException) {
             GoogleSignInResult.Cancelled
         } catch (e: NoCredentialException) {
-            GoogleSignInResult.Error(
-                "На пристрої немає Google-акаунта. Додайте акаунт у налаштуваннях пристрою і спробуйте ще раз",
-            )
+            GoogleSignInResult.Error("No Google account on this device. Add one in the device settings and try again")
         } catch (e: GoogleIdTokenParsingException) {
-            GoogleSignInResult.Error("Не вдалося прочитати відповідь Google")
+            GoogleSignInResult.Error("Google sign-in failed: unreadable response")
         } catch (e: GetCredentialException) {
-            GoogleSignInResult.Error("Не вдалося увійти через Google. Спробуйте ще раз")
+            GoogleSignInResult.Error("Google sign-in failed. Try again")
         }
     }
 }

@@ -22,14 +22,6 @@ interface GoogleSignInProvider {
     suspend fun getIdToken(): GoogleSignInResult
 }
 
-/** Реалізація для платформ, де Google-вхід ще не зроблено (Desktop, iOS). */
-object UnsupportedGoogleSignInProvider : GoogleSignInProvider {
-    override val isSupported: Boolean = false
-
-    override suspend fun getIdToken(): GoogleSignInResult =
-        GoogleSignInResult.Error("Вхід через Google недоступний на цій платформі")
-}
-
 /**
  * Провайдер, прив'язаний до поточного екрана: на Android йому потрібна Activity,
  * щоб показати вибір акаунта. Передається у ViewModel лише як аргумент виклику.
