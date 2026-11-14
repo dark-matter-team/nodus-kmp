@@ -70,6 +70,7 @@ import nodus.shared.generated.resources.nebula_stars
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.max
 import kotlin.math.min
 import androidx.compose.ui.graphics.shadow.Shadow as BoxShadow
 
@@ -110,6 +111,11 @@ private val ExpandedSpec = AuthSpec(
 private val ExpandedDesignWidth = 1512.dp
 private val ExpandedDesignHeight = 982.dp
 
+// Картка 765 dp і найвища форма (реєстрація) разом з полями навколо: у малому вікні масштаб
+// рахується від них, щоб картка не дрібнішала разом з усім фреймом 1512×982
+private val CardFitWidth = 900.dp
+private val CardFitHeight = 720.dp
+
 private val CardShape = RoundedCornerShape(8.dp)
 private val ControlShape = RoundedCornerShape(10.dp)
 private val ControlHeight = 46.dp
@@ -130,8 +136,10 @@ internal fun AuthCardScreen(
             val isExpanded = maxWidth >= 600.dp && maxWidth > maxHeight
             val density = LocalDensity.current
             val screenDensity = if (isExpanded) {
-                val scale = min(maxWidth / ExpandedDesignWidth, maxHeight / ExpandedDesignHeight)
-                Density(density.density * scale, density.fontScale)
+                val frameScale = min(maxWidth / ExpandedDesignWidth, maxHeight / ExpandedDesignHeight)
+                // Картка не менша, ніж дозволяє вікно, і не більша за макетну, поки вікно менше фрейму
+                val cardScale = minOf(1f, maxWidth / CardFitWidth, maxHeight / CardFitHeight)
+                Density(density.density * max(frameScale, cardScale), density.fontScale)
             } else {
                 density
             }
