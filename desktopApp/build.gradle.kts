@@ -34,14 +34,22 @@ if (googleDesktopClientId.isNotEmpty() &&
     )
 }
 
+val googleDesktopJvmArgs = listOf(
+    "-Dnodus.google.desktopClientId=$googleDesktopClientId",
+    "-Dnodus.google.desktopClientSecret=$googleDesktopClientSecret",
+)
+
+// jvmArgs з compose.desktop отримують лише run і дистрибутив, а запуск з IDE йде через hotRun
+// (Compose Hot Reload), тому йому ключі передаємо окремо.
+tasks.withType<JavaExec>().matching { it.name == "hotRun" }.configureEach {
+    jvmArgs(googleDesktopJvmArgs)
+}
+
 compose.desktop {
     application {
         mainClass = "com.darkmatter.nodus.MainKt"
 
-        jvmArgs += listOf(
-            "-Dnodus.google.desktopClientId=$googleDesktopClientId",
-            "-Dnodus.google.desktopClientSecret=$googleDesktopClientSecret",
-        )
+        jvmArgs += googleDesktopJvmArgs
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
