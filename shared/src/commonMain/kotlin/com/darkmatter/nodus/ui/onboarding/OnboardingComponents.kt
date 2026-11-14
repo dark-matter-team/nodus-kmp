@@ -33,7 +33,6 @@ import com.darkmatter.nodus.ui.theme.NodusColors
 import com.darkmatter.nodus.ui.theme.khandFontFamily
 import com.darkmatter.nodus.ui.theme.outerShadow
 import nodus.shared.generated.resources.Res
-import nodus.shared.generated.resources.ic_theme_toggle
 import nodus.shared.generated.resources.onboarding_dot_active
 import nodus.shared.generated.resources.onboarding_dot_inactive
 import org.jetbrains.compose.resources.painterResource
@@ -82,19 +81,6 @@ internal fun onboardingTextStyle(
         shadow = with(density) {
             TextShadow(color = shadowColor, offset = Offset(0f, shadowOffsetY.toPx()), blurRadius = shadowBlur.toPx())
         },
-    )
-}
-
-/**
- * Іконка перемикання теми. 40×40 враховує тінь навколо іконки 32×32.
- * Поки декоративна: світлої теми ще нема.
- */
-@Composable
-internal fun ThemeToggleIcon(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(Res.drawable.ic_theme_toggle),
-        contentDescription = null,
-        modifier = modifier.size(40.dp),
     )
 }
 

@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,8 +94,8 @@ private fun CompactOnboarding(
     onNext: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
-        TopBar(height = 77.dp, iconTop = 28.dp, iconEnd = 24.dp)
-        Spacer(Modifier.height(8.dp))
+        // Верхня смуга макета (77 dp) лишається порожньою: перемикач теми з'явиться разом зі світлою темою
+        Spacer(Modifier.height(77.dp + 8.dp))
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             CompactSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = CompactSizes)
         }
@@ -114,28 +113,14 @@ private fun ExpandedOnboarding(
     onSkip: () -> Unit,
     onNext: () -> Unit,
 ) {
-    Box(Modifier.fillMaxSize()) {
-        TopBar(height = 95.dp, iconTop = 36.dp, iconEnd = 32.dp)
-        Column(Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(166.dp))
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
-                WideSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = ExpandedSizes)
-            }
-            Spacer(Modifier.height(69.dp))
-            NavigationRow(pagerState, isLastPage, ExpandedSizes, lightStartFill = false, onSkip = onSkip, onNext = onNext)
-            Spacer(Modifier.height(51.dp))
+    Column(Modifier.fillMaxSize()) {
+        Spacer(Modifier.height(166.dp))
+        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            WideSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = ExpandedSizes)
         }
-    }
-}
-
-@Composable
-private fun TopBar(height: Dp, iconTop: Dp, iconEnd: Dp) {
-    Box(Modifier.fillMaxWidth().height(height)) {
-        ThemeToggleIcon(
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = iconTop, end = iconEnd),
-        )
+        Spacer(Modifier.height(69.dp))
+        NavigationRow(pagerState, isLastPage, ExpandedSizes, lightStartFill = false, onSkip = onSkip, onNext = onNext)
+        Spacer(Modifier.height(51.dp))
     }
 }
 

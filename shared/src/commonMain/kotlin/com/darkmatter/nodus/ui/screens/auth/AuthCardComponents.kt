@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.darkmatter.nodus.ui.onboarding.ThemeToggleIcon
 import com.darkmatter.nodus.ui.onboarding.onboardingTextStyle
 import com.darkmatter.nodus.ui.theme.NebulaBackground
 import com.darkmatter.nodus.ui.theme.NodusColors
@@ -86,8 +85,6 @@ internal class AuthSpec(
     val cornerSize: DpSize,
     val dividerLineWidth: Dp,
     val googleLogoSize: DpSize,
-    val themeIconTop: Dp,
-    val themeIconEnd: Dp,
 )
 
 private val CompactSpec = AuthSpec(
@@ -98,8 +95,6 @@ private val CompactSpec = AuthSpec(
     cornerSize = DpSize(14.9179.dp, 19.3464.dp),
     dividerLineWidth = 98.dp,
     googleLogoSize = DpSize(56.dp, 28.dp),
-    themeIconTop = 28.dp,
-    themeIconEnd = 24.dp,
 )
 
 private val ExpandedSpec = AuthSpec(
@@ -110,8 +105,6 @@ private val ExpandedSpec = AuthSpec(
     cornerSize = DpSize(37.0179.dp, 19.3464.dp),
     dividerLineWidth = 260.dp,
     googleLogoSize = DpSize(46.dp, 23.dp),
-    themeIconTop = 36.dp,
-    themeIconEnd = 32.dp,
 )
 
 private val ExpandedDesignWidth = 1512.dp
@@ -169,11 +162,6 @@ private fun AuthCardScreenContent(
         ) {
             AuthCard(spec = spec, content = content)
         }
-        ThemeToggleIcon(
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = spec.themeIconTop, end = spec.themeIconEnd),
-        )
     }
 }
 
