@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кутова дужка картки авторизації з мобільного макета (Figma: IOS Sign In Dark, Vector 1) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="14.9179dp"
+    android:height="19.3464dp"
+    android:viewportWidth="14.9179"
+    android:viewportHeight="19.3464">
+    <path
+        android:pathData="M1.5 19.3464V11.613C1.5 4.39378 4.47606 2.29722 5.85061 1.71388C6.2905 1.5272 6.77155 1.5 7.24942 1.5H14.9179"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFFFF" />
+</vector>

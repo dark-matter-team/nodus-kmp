@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -142,6 +143,7 @@ private fun SlideTexts(
                 fontSize = sizes.titleFontSize,
                 color = NodusColors.Title,
                 shadowOffsetY = 1.dp,
+                fontWeight = FontWeight.Bold,
             ),
             maxLines = 1,
             autoSize = TextAutoSize.StepBased(minFontSize = 20.sp, maxFontSize = sizes.titleFontSize),

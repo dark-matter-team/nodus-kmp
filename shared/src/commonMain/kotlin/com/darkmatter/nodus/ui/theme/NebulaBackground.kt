@@ -8,6 +8,12 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -31,39 +37,44 @@ private val NebulaGradientStops = arrayOf(
 /**
  * Фон з макета: еліптичний радіальний градієнт, вписаний в екран, і шар зірок поверх нього.
  * Зорі — це шейдер Nebula з Figma, заздалегідь відрендерений у текстуру (див. tools/nebula):
- * рахувати його щокадру занадто дорого. Текстура вписується по висоті й центрується по ширині,
- * як координати оригінального шейдера.
+ * рахувати його щокадру занадто дорого.
  */
 @Composable
 fun NebulaBackground(modifier: Modifier = Modifier) {
-    val stars = imageResource(Res.drawable.nebula_stars)
-    Spacer(
-        modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val center = Offset(size.width / 2f, size.height / 2f)
-                val radius = size.width / 2f
-                val gradient = Brush.radialGradient(
-                    colorStops = NebulaGradientStops,
-                    center = center,
-                    radius = radius,
-                )
-                val starsHeight = size.height
-                val starsWidth = starsHeight * stars.width / stars.height
-                val starsOffset = IntOffset(((size.width - starsWidth) / 2f).roundToInt(), 0)
-                val starsSize = IntSize(starsWidth.roundToInt(), starsHeight.roundToInt())
+    Spacer(modifier.fillMaxSize().nebulaFill(imageResource(Res.drawable.nebula_stars)))
+}
 
-                onDrawBehind {
-                    // Коло радіусом у пів ширини, розтягнуте по вертикалі до висоти екрана, дає еліпс як у Figma
-                    scale(scaleX = 1f, scaleY = size.height / size.width, pivot = center) {
-                        drawRect(
-                            brush = gradient,
-                            topLeft = Offset(0f, center.y - radius),
-                            size = Size(size.width, size.width),
-                        )
-                    }
-                    drawImage(image = stars, dstOffset = starsOffset, dstSize = starsSize, alpha = NEBULA_ALPHA)
-                }
-            },
+/**
+ * Та сама заливка "туманність", вписана в розмір елемента (у Figma так зафарбовані й фон екрана,
+ * і картки авторизації). Текстура зірок вписується по висоті й центрується по ширині,
+ * як координати оригінального шейдера. Малюється без окремого шару, тож дочірні елементи
+ * з режимами накладання (soft-light) змішуються саме з цією заливкою.
+ */
+fun Modifier.nebulaFill(stars: ImageBitmap, shape: Shape = RectangleShape): Modifier = drawWithCache {
+    val center = Offset(size.width / 2f, size.height / 2f)
+    val radius = size.width / 2f
+    val gradient = Brush.radialGradient(
+        colorStops = NebulaGradientStops,
+        center = center,
+        radius = radius,
     )
+    val starsHeight = size.height
+    val starsWidth = starsHeight * stars.width / stars.height
+    val starsOffset = IntOffset(((size.width - starsWidth) / 2f).roundToInt(), 0)
+    val starsSize = IntSize(starsWidth.roundToInt(), starsHeight.roundToInt())
+    val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
+
+    onDrawBehind {
+        clipPath(outline) {
+            // Коло радіусом у пів ширини, розтягнуте по вертикалі до висоти елемента, дає еліпс як у Figma
+            scale(scaleX = 1f, scaleY = size.height / size.width, pivot = center) {
+                drawRect(
+                    brush = gradient,
+                    topLeft = Offset(0f, center.y - radius),
+                    size = Size(size.width, size.width),
+                )
+            }
+            drawImage(image = stars, dstOffset = starsOffset, dstSize = starsSize, alpha = NEBULA_ALPHA)
+        }
+    }
 }

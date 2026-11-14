@@ -14,20 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.shadow.DropShadowPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -37,6 +31,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.darkmatter.nodus.ui.theme.NodusColors
 import com.darkmatter.nodus.ui.theme.khandFontFamily
+import com.darkmatter.nodus.ui.theme.outerShadow
 import nodus.shared.generated.resources.Res
 import nodus.shared.generated.resources.ic_theme_toggle
 import nodus.shared.generated.resources.onboarding_dot_active
@@ -72,15 +67,18 @@ internal fun onboardingTextStyle(
     shadowOffsetY: Dp,
     shadowColor: Color = NodusColors.Shadow,
     shadowBlur: Dp = 4.dp,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textAlign: TextAlign = TextAlign.Center,
 ): TextStyle {
     val density = LocalDensity.current
     return TextStyle(
         fontFamily = fontFamily,
+        fontWeight = fontWeight,
         fontSize = fontSize,
         lineHeight = fontSize,
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
         color = color,
-        textAlign = TextAlign.Center,
+        textAlign = textAlign,
         shadow = with(density) {
             TextShadow(color = shadowColor, offset = Offset(0f, shadowOffsetY.toPx()), blurRadius = shadowBlur.toPx())
         },
@@ -178,19 +176,5 @@ internal fun NextButton(
                 shadowColor = if (isLastPage) NodusColors.StartLabelShadow else NodusColors.Shadow,
             ),
         )
-    }
-}
-
-/**
- * Тінь лише ззовні фігури, як CSS box-shadow у макеті. Звичайний dropShadow затемнив би
- * й прозору середину кнопки SKIP.
- */
-private fun Modifier.outerShadow(shape: Shape, shadow: BoxShadow): Modifier = drawWithCache {
-    val painter = DropShadowPainter(shape, shadow)
-    val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
-    onDrawBehind {
-        clipPath(outline, clipOp = ClipOp.Difference) {
-            with(painter) { draw(size) }
-        }
     }
 }

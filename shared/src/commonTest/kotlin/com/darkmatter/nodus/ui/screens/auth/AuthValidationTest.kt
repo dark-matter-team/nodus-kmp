@@ -15,40 +15,40 @@ class AuthValidationTest {
 
     @Test
     fun emptyEmailAsksToEnterIt() {
-        assertEquals("Введіть email", AuthValidation.validateEmail("   "))
+        assertEquals("Enter your email", AuthValidation.validateEmail("   "))
     }
 
     @Test
     fun malformedEmailIsRejected() {
         listOf("user", "user@", "@example.com", "user@example", "us er@example.com", "a@b@c.com").forEach {
-            assertEquals("Некоректний формат email", AuthValidation.validateEmail(it), "email: '$it'")
+            assertEquals("Invalid email format", AuthValidation.validateEmail(it), "email: '$it'")
         }
     }
 
     @Test
     fun tooLongEmailIsRejected() {
         val email = "a".repeat(250) + "@x.ua"
-        assertEquals("Некоректний формат email", AuthValidation.validateEmail(email))
+        assertEquals("Invalid email format", AuthValidation.validateEmail(email))
     }
 
     @Test
     fun newPasswordLengthMustBeBetween8And72() {
         assertNotNull(AuthValidation.validateNewPassword(""))
         assertEquals(
-            "Пароль має містити щонайменше 8 символів",
+            "Password must be at least 8 characters",
             AuthValidation.validateNewPassword("a".repeat(7)),
         )
         assertNull(AuthValidation.validateNewPassword("a".repeat(8)))
         assertNull(AuthValidation.validateNewPassword("a".repeat(72)))
         assertEquals(
-            "Пароль не може бути довшим за 72 символи",
+            "Password must be at most 72 characters",
             AuthValidation.validateNewPassword("a".repeat(73)),
         )
     }
 
     @Test
     fun loginPasswordOnlyHasToBeEntered() {
-        assertEquals("Введіть пароль", AuthValidation.validateLoginPassword(""))
+        assertEquals("Enter your password", AuthValidation.validateLoginPassword(""))
         assertNull(AuthValidation.validateLoginPassword("short"))
     }
 
@@ -65,23 +65,23 @@ class AuthValidationTest {
     @Test
     fun nicknameMustNotContainAt() {
         assertEquals(
-            "Нікнейм має містити від 2 до 50 символів і не містити '@'",
+            "Username must be 2–50 characters and must not contain '@'",
             AuthValidation.validateNickname("nick@name"),
         )
     }
 
     @Test
     fun loginAcceptsNicknameOrValidEmail() {
-        assertEquals("Введіть email або нікнейм", AuthValidation.validateLogin("  "))
+        assertEquals("Enter your email or username", AuthValidation.validateLogin("  "))
         assertNull(AuthValidation.validateLogin("tester1"))
         assertNull(AuthValidation.validateLogin("test1@example.com"))
-        assertEquals("Некоректний формат email", AuthValidation.validateLogin("test1@"))
+        assertEquals("Invalid email format", AuthValidation.validateLogin("test1@"))
     }
 
     @Test
     fun passwordConfirmationMustMatch() {
         assertNull(AuthValidation.validatePasswordConfirmation("Passw0rd!", "Passw0rd!"))
-        assertEquals("Паролі не збігаються", AuthValidation.validatePasswordConfirmation("Passw0rd!", "Passw0rd"))
+        assertEquals("Passwords do not match", AuthValidation.validatePasswordConfirmation("Passw0rd!", "Passw0rd"))
     }
 
     @Test

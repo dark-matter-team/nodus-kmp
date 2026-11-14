@@ -1,21 +1,20 @@
 package com.darkmatter.nodus.ui.screens.auth
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.darkmatter.nodus.core.auth.rememberGoogleSignInProvider
+import com.darkmatter.nodus.ui.theme.NodusColors
 
+/** Відступи з фреймів "IOS Sign Up Dark" і "MacOS Welcome Dark" (Sign Up). */
 @Composable
 fun RegisterScreen(
     onRegistered: () -> Unit,
@@ -30,60 +29,79 @@ fun RegisterScreen(
         if (state.isRegistered) onRegistered()
     }
 
-    AuthScreenLayout(title = "Реєстрація", modifier = modifier) {
-        AuthTextField(
+    AuthCardScreen(modifier = modifier) { spec ->
+        Spacer(Modifier.height(30.dp))
+        AuthTitle("SIGN UP")
+        Spacer(Modifier.height(30.dp))
+        AuthField(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
-            label = "Email",
+            placeholder = "Email",
             error = state.emailError,
             enabled = !state.isBusy,
             keyboardType = KeyboardType.Email,
         )
-        AuthTextField(
+        Spacer(Modifier.height(13.dp))
+        AuthField(
             value = state.nickname,
             onValueChange = viewModel::onNicknameChange,
-            label = "Нікнейм",
+            placeholder = "Username",
             error = state.nicknameError,
             enabled = !state.isBusy,
         )
-        PasswordField(
+        Spacer(Modifier.height(13.dp))
+        AuthField(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
-            label = "Пароль (щонайменше ${AuthValidation.PASSWORD_MIN_LENGTH} символів)",
+            placeholder = "Password",
             error = state.passwordError,
             enabled = !state.isBusy,
-            imeAction = ImeAction.Next,
+            isPassword = true,
         )
-        PasswordField(
+        Spacer(Modifier.height(13.dp))
+        AuthField(
             value = state.passwordConfirmation,
             onValueChange = viewModel::onPasswordConfirmationChange,
-            label = "Повторіть пароль",
+            placeholder = "Repeat your password",
             error = state.passwordConfirmationError,
             enabled = !state.isBusy,
+            imeAction = ImeAction.Done,
+            isPassword = true,
         )
-        FormErrorText(state.errorMessage)
-        SubmitButton(
-            text = "Зареєструватися",
+        Spacer(Modifier.height(13.dp))
+        state.errorMessage?.let {
+            AuthErrorText(it)
+            Spacer(Modifier.height(8.dp))
+        }
+        AuthPrimaryButton(
+            text = "Register",
             isLoading = state.isLoading,
-            onClick = viewModel::submit,
             enabled = !state.isGoogleLoading,
+            onClick = viewModel::submit,
         )
         if (googleSignInProvider.isSupported) {
-            GoogleSignInButton(
+            Spacer(Modifier.height(15.dp))
+            AuthOrDivider(spec)
+            Spacer(Modifier.height(15.dp))
+            AuthGoogleButton(
+                spec = spec,
+                text = "Sign up with Google",
                 isLoading = state.isGoogleLoading,
                 enabled = !state.isLoading,
+                shadowOffsetY = 4.dp,
                 onClick = { viewModel.signInWithGoogle(googleSignInProvider) },
             )
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Вже маєте акаунт?")
-            TextButton(onClick = onOpenLogin, enabled = !state.isBusy) {
-                Text("Увійти")
-            }
-        }
+        Spacer(Modifier.height(13.5.dp))
+        AuthSmallText("Already have an Account?")
+        Spacer(Modifier.height(2.5.dp))
+        AuthSecondaryButton(
+            text = "Sign In",
+            borderColor = NodusColors.SecondaryBorderDark,
+            shadowOffsetY = 4.dp,
+            enabled = !state.isBusy,
+            onClick = onOpenLogin,
+        )
+        Spacer(Modifier.height(if (spec.isExpanded) 20.dp else 14.dp))
     }
 }

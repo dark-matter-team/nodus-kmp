@@ -29,4 +29,19 @@ object NodusColors {
 
     val Shadow = Color.Black.copy(alpha = 0.25f)
     val StartLabelShadow = CardBorder.copy(alpha = 0.25f)
+
+    // Екрани входу й реєстрації (Figma: Sign In / Sign Up Dark)
+    val AuthTitle = Color(0xFFECECEC)
+    val FieldFill = Color(153, 132, 255).copy(alpha = 0.47f)
+    val FieldPlaceholder = Color(0xFF394FAE)
+    val PrimaryFill = Color(41, 23, 128).copy(alpha = 0.47f)
+    val PrimaryLabel = Color(0xFF92A4F4)
+    val GoogleFill = Color(206, 199, 241).copy(alpha = 0.33f)
+    val GoogleLabel = Color(0xFFA880ED)
+    val SecondaryBorderDark = Color(0xFF1A1E61)
+    val SecondaryBorderLight = Color(0xFFBE91E3)
+
+    // Немає в макетах: введений текст і помилки, підібрано під палітру до появи дизайну
+    val FieldText = StartLabel
+    val Error = Color(0xFFFF8FA3)
 }

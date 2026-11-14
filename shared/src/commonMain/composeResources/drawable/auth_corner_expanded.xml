@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кутова дужка картки авторизації з десктопного макета (Figma: MacOS Welcome Dark, Vector 1) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="37.0179dp"
+    android:height="19.3464dp"
+    android:viewportWidth="37.0179"
+    android:viewportHeight="19.3464">
+    <path
+        android:pathData="M1.5 19.3464V11.613C1.5 2.22601 14.8192 1.5 14.8192 1.5H37.0179"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFFFF" />
+</vector>
