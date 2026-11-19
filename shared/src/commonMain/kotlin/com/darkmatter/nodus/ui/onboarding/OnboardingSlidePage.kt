@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -58,8 +59,7 @@ internal fun CompactSlidePage(
             slide = slide,
             step = step,
             sizes = sizes,
-            stepToTitle = 7.dp,
-            titleToDescription = 7.dp,
+            titleBoxHeight = 54.dp,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -85,11 +85,10 @@ internal fun WideSlidePage(
                 slide = slide,
                 step = step,
                 sizes = sizes,
-                stepToTitle = 1.dp,
-                titleToDescription = 4.dp,
+                titleBoxHeight = 60.dp,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(start = 24.dp, end = 24.dp, bottom = 34.dp),
+                    .padding(start = 24.dp, end = 24.dp, bottom = 36.dp),
             )
         }
     }
@@ -124,35 +123,59 @@ private fun SlideTexts(
     slide: OnboardingSlide,
     step: String,
     sizes: OnboardingSizes,
-    stepToTitle: Dp,
-    titleToDescription: Dp,
+    titleBoxHeight: Dp,
     modifier: Modifier = Modifier,
 ) {
     val khand = khandFontFamily()
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        BasicText(
-            text = step,
-            style = onboardingTextStyle(khand, sizes.stepFontSize, NodusColors.StepLabel, shadowOffsetY = 2.dp),
-        )
-        Spacer(Modifier.height(stepToTitle))
-        // Заголовок завжди в один рядок: на вузьких екранах шрифт зменшується
-        BasicText(
-            text = slide.title,
-            style = onboardingTextStyle(
-                fontFamily = iosevkaCharonFontFamily(),
-                fontSize = sizes.titleFontSize,
-                color = NodusColors.Title,
-                shadowOffsetY = 1.dp,
-                fontWeight = FontWeight.Bold,
-            ),
-            maxLines = 1,
-            autoSize = TextAutoSize.StepBased(minFontSize = 20.sp, maxFontSize = sizes.titleFontSize),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(titleToDescription))
-        BasicText(
-            text = slide.description,
-            style = onboardingTextStyle(khand, sizes.descriptionFontSize, NodusColors.Description, shadowOffsetY = 2.dp),
-        )
+        TextBox(height = StepBoxHeight) {
+            BasicText(
+                text = step,
+                style = onboardingTextStyle(khand, sizes.stepFontSize, NodusColors.StepLabel, shadowOffsetY = 2.dp),
+            )
+        }
+        TextBox(height = titleBoxHeight) {
+            // Заголовок завжди в один рядок: на вузьких екранах шрифт зменшується
+            BasicText(
+                text = slide.title,
+                style = onboardingTextStyle(
+                    fontFamily = iosevkaCharonFontFamily(),
+                    fontSize = sizes.titleFontSize,
+                    color = NodusColors.Title,
+                    shadowOffsetY = 1.dp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 20.sp, maxFontSize = sizes.titleFontSize),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        TextBox(height = DescriptionBoxHeight) {
+            BasicText(
+                text = slide.description,
+                style = onboardingTextStyle(khand, sizes.descriptionFontSize, NodusColors.Description, shadowOffsetY = 2.dp),
+            )
+        }
+    }
+}
+
+// Висоти текстових блоків з макета: блоки стоять впритул один до одного
+private val StepBoxHeight = 14.dp
+private val DescriptionBoxHeight = 12.dp
+
+/**
+ * Текстовий блок фіксованої висоти, як у Figma: текст центрується в ньому і може виходити за межі,
+ * тож відступи між рядками не залежать від висоти рядка конкретного шрифту.
+ */
+@Composable
+private fun TextBox(height: Dp, content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .wrapContentHeight(align = Alignment.CenterVertically, unbounded = true),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
     }
 }
