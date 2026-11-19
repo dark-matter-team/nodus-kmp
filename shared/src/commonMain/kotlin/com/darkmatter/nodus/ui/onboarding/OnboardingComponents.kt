@@ -46,13 +46,12 @@ internal data class OnboardingSizes(
     val descriptionFontSize: TextUnit,
     val buttonFontSize: TextUnit,
     val buttonSize: DpSize,
-    val buttonsStartPadding: Dp,
-    val buttonsEndPadding: Dp,
+    val buttonsHorizontalPadding: Dp,
+    val dotSize: Dp,
+    val dotSpacing: Dp,
 )
 
 private val ButtonShape = RoundedCornerShape(10.dp)
-private val DotSize = 20.dp
-private val DotSpacing = 29.dp
 
 /**
  * Текстовий стиль з макета. Висота рядка дорівнює розміру шрифту, як у текстових блоках Figma,
@@ -85,15 +84,15 @@ internal fun onboardingTextStyle(
 }
 
 @Composable
-internal fun PageDots(count: Int, current: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(DotSpacing)) {
+internal fun PageDots(count: Int, current: Int, sizes: OnboardingSizes, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(sizes.dotSpacing)) {
         repeat(count) { index ->
             Image(
                 painter = painterResource(
                     if (index == current) Res.drawable.onboarding_dot_active else Res.drawable.onboarding_dot_inactive,
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(DotSize),
+                modifier = Modifier.size(sizes.dotSize),
             )
         }
     }
@@ -122,22 +121,14 @@ internal fun SkipButton(sizes: OnboardingSizes, onClick: () -> Unit, modifier: M
     }
 }
 
-/**
- * NEXT, а на останньому слайді START. [lightFill] вмикає світлу заливку START з мобільного макета;
- * на десктопі START має ту саму темну заливку, що й NEXT.
- */
+/** NEXT, а на останньому слайді START: та сама заливка, інший колір підпису. */
 @Composable
 internal fun NextButton(
     isLastPage: Boolean,
-    lightFill: Boolean,
     sizes: OnboardingSizes,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val useLightFill = isLastPage && lightFill
-    val fillTop = if (useLightFill) NodusColors.StartFillTop else NodusColors.NextFillTop
-    val fillBottom = if (useLightFill) NodusColors.StartFillBottom else NodusColors.NextFillBottom
-
     Box(
         modifier = modifier
             .size(sizes.buttonSize)
@@ -145,8 +136,8 @@ internal fun NextButton(
             // Два напівпрозорі шари в режимі soft-light, як у Figma; малюються без окремого шару, щоб змішуватись з фоном
             .drawBehind {
                 val corner = CornerRadius(10.dp.toPx())
-                drawRoundRect(color = fillBottom, cornerRadius = corner, blendMode = BlendMode.Softlight)
-                drawRoundRect(color = fillTop, cornerRadius = corner, blendMode = BlendMode.Softlight)
+                drawRoundRect(color = NodusColors.NextFillBottom, cornerRadius = corner, blendMode = BlendMode.Softlight)
+                drawRoundRect(color = NodusColors.NextFillTop, cornerRadius = corner, blendMode = BlendMode.Softlight)
             }
             .clip(ButtonShape)
             .clickable(onClick = onClick),

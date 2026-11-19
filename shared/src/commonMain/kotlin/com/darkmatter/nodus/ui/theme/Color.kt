@@ -24,8 +24,6 @@ object NodusColors {
     // Заливка кнопок: два шари з режимом накладання soft-light
     val NextFillTop = Color(106, 81, 232).copy(alpha = 0.47f)
     val NextFillBottom = Color(97, 85, 159).copy(alpha = 0.47f)
-    val StartFillTop = Color(244, 242, 255).copy(alpha = 0.47f)
-    val StartFillBottom = Color(239, 236, 255).copy(alpha = 0.47f)
 
     val Shadow = Color.Black.copy(alpha = 0.25f)
     val StartLabelShadow = CardBorder.copy(alpha = 0.25f)
