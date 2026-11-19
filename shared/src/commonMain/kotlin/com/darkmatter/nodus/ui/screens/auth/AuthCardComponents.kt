@@ -3,6 +3,8 @@ package com.darkmatter.nodus.ui.screens.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -37,10 +40,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -49,10 +59,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darkmatter.nodus.ui.onboarding.onboardingTextStyle
@@ -65,6 +79,8 @@ import com.darkmatter.nodus.ui.theme.outerShadow
 import nodus.shared.generated.resources.Res
 import nodus.shared.generated.resources.auth_corner_compact
 import nodus.shared.generated.resources.auth_corner_expanded
+import nodus.shared.generated.resources.ic_eye
+import nodus.shared.generated.resources.ic_eye_off
 import nodus.shared.generated.resources.ic_google
 import nodus.shared.generated.resources.nebula_stars
 import org.jetbrains.compose.resources.DrawableResource
@@ -120,6 +136,9 @@ private val CardShape = RoundedCornerShape(8.dp)
 private val ControlShape = RoundedCornerShape(10.dp)
 private val ControlHeight = 46.dp
 private val ControlCorner = 10.dp
+
+/** Висота рядка помилки на екранах входу й реєстрації: на стільки картка вища за макет. */
+internal val AuthMessageHeight = 22.dp
 
 /**
  * Каркас екрана входу чи реєстрації: фон, перемикач теми і картка з кутовими дужками по центру.
@@ -179,21 +198,39 @@ private fun AuthCard(
     spec: AuthSpec,
     content: @Composable ColumnScope.(AuthSpec) -> Unit,
 ) {
+    NebulaCard(
+        width = spec.cardWidth,
+        horizontalPadding = spec.fieldPadding,
+        corner = spec.corner,
+        cornerSize = spec.cornerSize,
+    ) {
+        content(spec)
+    }
+}
+
+/** Спільна основа карток авторизації й відновлення пароля. */
+@Composable
+internal fun NebulaCard(
+    width: Dp,
+    horizontalPadding: Dp,
+    corner: DrawableResource,
+    cornerSize: DpSize,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val stars = imageResource(Res.drawable.nebula_stars)
-    Box(Modifier.width(spec.cardWidth).nebulaFill(stars, CardShape)) {
+    Box(Modifier.width(width).nebulaFill(stars, CardShape)) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = spec.fieldPadding),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            content(spec)
-        }
-        CardCorners(spec, Modifier.matchParentSize())
+            content = content,
+        )
+        CardCorners(corner, cornerSize, Modifier.matchParentSize())
     }
 }
 
 @Composable
-private fun CardCorners(spec: AuthSpec, modifier: Modifier = Modifier) {
-    val corner = painterResource(spec.corner)
+private fun CardCorners(cornerResource: DrawableResource, cornerSize: DpSize, modifier: Modifier = Modifier) {
+    val corner = painterResource(cornerResource)
     Box(modifier) {
         // Одна й та сама дужка, віддзеркалена для кожного кута
         listOf(
@@ -207,7 +244,7 @@ private fun CardCorners(spec: AuthSpec, modifier: Modifier = Modifier) {
                 contentDescription = null,
                 modifier = Modifier
                     .align(alignment)
-                    .size(spec.cornerSize)
+                    .size(cornerSize)
                     .graphicsLayer {
                         scaleX = flip.first
                         scaleY = flip.second
@@ -233,80 +270,160 @@ internal fun AuthTitle(text: String) {
     )
 }
 
-/** Поле з напівпрозорою заливкою soft-light і підписом-заглушкою зліва, як у макеті. */
+/**
+ * Поле з напівпрозорою заливкою soft-light і підписом-заглушкою зліва, як у макеті.
+ * Розміри за замовчуванням з екранів входу й реєстрації; екрани відновлення пароля передають свої.
+ * Рамка: у фокусі світла, з помилкою червона (як клітинки коду), а [alwaysBordered] малює
+ * звичайну темну рамку з макетів відновлення пароля.
+ */
 @Composable
 internal fun AuthField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    error: String?,
+    isError: Boolean,
     enabled: Boolean,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     isPassword: Boolean = false,
+    height: Dp = ControlHeight,
+    fontSize: TextUnit = 14.sp,
+    contentPaddingStart: Dp = 6.dp,
+    alwaysBordered: Boolean = false,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
     val khand = khandFontFamily()
-    Column(Modifier.fillMaxWidth()) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = enabled,
-            singleLine = true,
-            textStyle = TextStyle(fontFamily = khand, fontSize = 14.sp, color = NodusColors.FieldText),
-            cursorBrush = SolidColor(NodusColors.GoogleLabel),
-            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
-            decorationBox = { innerTextField ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(ControlHeight)
-                        .outerShadow(ControlShape, BoxShadow(radius = 4.dp, color = NodusColors.Shadow, offset = DpOffset(0.dp, 4.dp)))
-                        .softLightFill(NodusColors.FieldFill)
-                        .padding(start = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.weight(1f)) {
-                        if (value.isEmpty()) {
-                            BasicText(
-                                text = placeholder,
-                                style = TextStyle(fontFamily = khand, fontSize = 14.sp, color = NodusColors.FieldPlaceholder),
-                            )
-                        }
-                        innerTextField()
-                    }
-                    // Перемикача видимості пароля немає в макеті, залишено як функцію
-                    if (isPassword) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = enabled,
+        singleLine = true,
+        textStyle = TextStyle(fontFamily = khand, fontSize = fontSize, color = NodusColors.FieldText),
+        cursorBrush = SolidColor(NodusColors.GoogleLabel),
+        visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        interactionSource = interactionSource,
+        modifier = Modifier.fillMaxWidth(),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height)
+                    .outerShadow(ControlShape, BoxShadow(radius = 4.dp, color = NodusColors.Shadow, offset = DpOffset(0.dp, 4.dp)))
+                    .softLightFill(NodusColors.FieldFill)
+                    .fieldBorder(
+                        isError = isError,
+                        isFocused = isFocused,
+                        alwaysBordered = alwaysBordered,
+                    )
+                    .padding(start = contentPaddingStart),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) {
                         BasicText(
-                            text = if (passwordVisible) "HIDE" else "SHOW",
-                            style = TextStyle(fontFamily = khand, fontSize = 12.sp, color = NodusColors.FieldPlaceholder),
-                            modifier = Modifier
-                                .clip(ControlShape)
-                                .clickable { passwordVisible = !passwordVisible }
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            text = placeholder,
+                            style = TextStyle(fontFamily = khand, fontSize = fontSize, color = NodusColors.FieldPlaceholder),
                         )
                     }
+                    innerTextField()
                 }
-            },
-        )
-        if (error != null) {
-            Spacer(Modifier.height(4.dp))
-            AuthErrorText(error, TextAlign.Start)
-        }
-    }
+                if (isPassword) {
+                    // Іконки ока немає в макетах: прості іконки кольору підказки
+                    Image(
+                        painter = painterResource(if (passwordVisible) Res.drawable.ic_eye_off else Res.drawable.ic_eye),
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        colorFilter = ColorFilter.tint(NodusColors.FieldPlaceholder),
+                        modifier = Modifier
+                            .clip(ControlShape)
+                            .clickable { passwordVisible = !passwordVisible }
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                            .size((fontSize.value * 1.4f).dp),
+                    )
+                }
+            }
+        },
+    )
 }
 
-/** Основна кнопка (Sign in / Register): два шари темної заливки soft-light. */
+/**
+ * Рамка поля або клітинки коду. [tintOnError] ще й підфарбовує заливку червоним, як клітинки
+ * в макеті коду; на світлих полях входу така заливка стає яскраво-рожевою, тож там лише рамка.
+ */
+internal fun Modifier.fieldBorder(
+    isError: Boolean,
+    isFocused: Boolean,
+    alwaysBordered: Boolean,
+    cornerRadius: Dp = ControlCorner,
+    tintOnError: Boolean = false,
+): Modifier =
+    drawBehind {
+        val corner = CornerRadius(cornerRadius.toPx())
+        when {
+            isError -> {
+                if (tintOnError) drawRoundRect(NodusColors.ErrorFill, cornerRadius = corner, blendMode = BlendMode.Softlight)
+                val width = 2.dp.toPx()
+                drawRoundRect(
+                    color = NodusColors.ErrorBorder,
+                    topLeft = Offset(width / 2, width / 2),
+                    size = Size(size.width - width, size.height - width),
+                    cornerRadius = corner,
+                    style = Stroke(width),
+                )
+            }
+            isFocused || alwaysBordered -> drawRoundRect(
+                color = if (isFocused) NodusColors.FieldBorderFocused else NodusColors.FieldBorder,
+                cornerRadius = corner,
+                style = Stroke(1.dp.toPx()),
+                blendMode = BlendMode.ColorDodge,
+            )
+        }
+    }
+
+/** Основна кнопка (Sign in / Register / Send a Code): два шари темної заливки soft-light. */
 @Composable
-internal fun AuthPrimaryButton(text: String, isLoading: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    AuthButtonBox(enabled = enabled && !isLoading, shadowOffsetY = 4.dp, onClick = onClick, fill = {
+internal fun AuthPrimaryButton(
+    text: String,
+    isLoading: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    height: Dp = ControlHeight,
+    fontSize: TextUnit = 14.sp,
+) {
+    AuthButtonBox(enabled = enabled && !isLoading, shadowOffsetY = 4.dp, onClick = onClick, height = height, fill = {
         softLightFill(NodusColors.PrimaryFill).softLightFill(NodusColors.PrimaryFill)
     }) {
         if (isLoading) {
             AuthProgress(NodusColors.PrimaryLabel)
         } else {
-            AuthButtonLabel(text, NodusColors.PrimaryLabel, shadowOffsetY = 4.dp)
+            AuthButtonLabel(text, NodusColors.PrimaryLabel, shadowOffsetY = 4.dp, fontSize = fontSize)
+        }
+    }
+}
+
+/**
+ * Яскравіша кнопка (Save Password, Sign In після зміни пароля): два шари soft-light,
+ * нижній на мобільному світлий, на десктопі фіолетовий.
+ */
+@Composable
+internal fun AuthAccentButton(
+    text: String,
+    isLoading: Boolean,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    height: Dp,
+    fontSize: TextUnit,
+) {
+    val bottom = if (isExpanded) NodusColors.AccentButtonFillBottomExpanded else NodusColors.AccentButtonFillBottomCompact
+    AuthButtonBox(enabled = !isLoading, shadowOffsetY = 4.dp, onClick = onClick, height = height, fill = {
+        softLightFill(bottom).softLightFill(NodusColors.AccentButtonFillTop)
+    }) {
+        if (isLoading) {
+            AuthProgress(NodusColors.PrimaryLabel)
+        } else {
+            AuthButtonLabel(text, NodusColors.PrimaryLabel, shadowOffsetY = 4.dp, fontSize = fontSize)
         }
     }
 }
@@ -373,12 +490,13 @@ private fun AuthButtonBox(
     shadowOffsetY: Dp,
     onClick: () -> Unit,
     fill: Modifier.() -> Modifier,
+    height: Dp = ControlHeight,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(ControlHeight)
+            .height(height)
             .outerShadow(ControlShape, BoxShadow(radius = 4.dp, color = NodusColors.Shadow, offset = DpOffset(0.dp, shadowOffsetY)))
             .fill()
             .clip(ControlShape)
@@ -389,12 +507,12 @@ private fun AuthButtonBox(
 }
 
 @Composable
-private fun AuthButtonLabel(text: String, color: Color, shadowOffsetY: Dp) {
+private fun AuthButtonLabel(text: String, color: Color, shadowOffsetY: Dp, fontSize: TextUnit = 14.sp) {
     BasicText(
         text = text,
         style = onboardingTextStyle(
             fontFamily = khandFontFamily(),
-            fontSize = 14.sp,
+            fontSize = fontSize,
             color = color,
             shadowOffsetY = shadowOffsetY,
         ),
@@ -433,13 +551,9 @@ private fun DividerLine(width: Dp) {
     )
 }
 
-/** Дрібний підпис Khand Medium 12 ("Already have an Account?" та посилання). */
+/** Дрібний підпис Khand Medium 12 ("Already have an Account?"). */
 @Composable
-internal fun AuthSmallText(
-    text: String,
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
-) {
+internal fun AuthSmallText(text: String) {
     BasicText(
         text = text,
         style = onboardingTextStyle(
@@ -449,26 +563,75 @@ internal fun AuthSmallText(
             shadowOffsetY = 4.dp,
             fontWeight = FontWeight.Medium,
         ),
-        modifier = if (onClick != null) modifier.clip(ControlShape).clickable(onClick = onClick) else modifier,
     )
 }
 
-/** Помилки в макетах не намальовані: колір і розмір підібрано під палітру. */
+/** Підкреслене посилання Khand Medium ("Forgot your password?", "Back to Sign In", "Resend Code"). */
 @Composable
-internal fun AuthErrorText(message: String, textAlign: TextAlign = TextAlign.Center) {
+internal fun AuthLink(
+    text: String,
+    fontSize: TextUnit,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BasicText(
-        text = message,
-        style = TextStyle(
+        text = text,
+        style = onboardingTextStyle(
             fontFamily = khandFontFamily(),
-            fontSize = 12.sp,
-            color = NodusColors.Error,
-            textAlign = textAlign,
-        ),
-        modifier = Modifier.fillMaxWidth(),
+            fontSize = fontSize,
+            color = NodusColors.Link,
+            shadowOffsetY = 4.dp,
+            fontWeight = FontWeight.Medium,
+        ).copy(textDecoration = TextDecoration.Underline),
+        modifier = modifier.clip(ControlShape).clickable(enabled = enabled, onClick = onClick),
     )
+}
+
+/**
+ * Рядок повідомлення фіксованої висоти: місце під помилку зарезервоване, тож форма не стрибає.
+ * Стиль помилки з макета "Invalid Recovery code": Iosevka Charon, рожевий колір.
+ */
+@Composable
+internal fun AuthMessage(
+    message: String?,
+    height: Dp,
+    fontSize: TextUnit = 14.sp,
+    color: Color = NodusColors.ErrorText,
+) {
+    Box(Modifier.fillMaxWidth().height(height), contentAlignment = Alignment.Center) {
+        if (message != null) {
+            BasicText(
+                text = message,
+                style = TextStyle(
+                    fontFamily = iosevkaCharonFontFamily(),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = fontSize,
+                    color = color,
+                    textAlign = TextAlign.Center,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.wrapContentHeight(unbounded = true),
+            )
+        }
+    }
+}
+
+/**
+ * Розміщує текст так, щоб його базова лінія була на [baseline] від верху блоку висотою [height],
+ * як координати тексту в Figma. Текст може виходити за межі блоку; висота блоку від шрифту не залежить.
+ */
+internal fun Modifier.baselineSlot(height: Dp, baseline: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    val firstBaseline = placeable[FirstBaseline].takeIf { it != AlignmentLine.Unspecified } ?: 0
+    val slotHeight = height.roundToPx()
+    layout(placeable.width, slotHeight) {
+        placeable.place(0, baseline.roundToPx() - firstBaseline)
+    }
 }
 
 /** Напівпрозора заливка в режимі soft-light; без окремого шару, щоб змішуватися з карткою. */
-private fun Modifier.softLightFill(color: Color): Modifier = drawBehind {
-    drawRoundRect(color, cornerRadius = CornerRadius(ControlCorner.toPx()), blendMode = BlendMode.Softlight)
+internal fun Modifier.softLightFill(color: Color, corner: Dp = ControlCorner): Modifier = drawBehind {
+    drawRoundRect(color, cornerRadius = CornerRadius(corner.toPx()), blendMode = BlendMode.Softlight)
 }

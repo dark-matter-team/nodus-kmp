@@ -1,6 +1,8 @@
 package com.darkmatter.nodus.ui.screens.auth
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,11 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.darkmatter.nodus.core.auth.rememberGoogleSignInProvider
 import com.darkmatter.nodus.ui.theme.NodusColors
 
-/** Відступи з фреймів "IOS Sign In Dark" і "MacOS Welcome Dark" (Sign In). */
+/** Відступи з фреймів "IOS Sign In Dark" і "Desktop Sign In D". */
 @Composable
 fun LoginScreen(
     onLoggedIn: () -> Unit,
@@ -39,7 +42,7 @@ fun LoginScreen(
             value = state.login,
             onValueChange = viewModel::onLoginChange,
             placeholder = "Email or Username",
-            error = state.loginError,
+            isError = state.loginError != null,
             enabled = !state.isBusy,
             keyboardType = KeyboardType.Email,
         )
@@ -48,23 +51,27 @@ fun LoginScreen(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             placeholder = "Password",
-            error = state.passwordError,
+            isError = state.passwordError != null,
             enabled = !state.isBusy,
             imeAction = ImeAction.Done,
             isPassword = true,
         )
-        // Посилання немає в макеті: тимчасове місце до появи дизайну відновлення пароля
-        Spacer(Modifier.height(6.dp))
-        AuthSmallText(
-            text = "Forgot password?",
-            onClick = if (state.isBusy) null else onForgotPassword,
-            modifier = Modifier.align(Alignment.End),
-        )
-        Spacer(Modifier.height(7.dp))
-        state.errorMessage?.let {
-            AuthErrorText(it)
-            Spacer(Modifier.height(8.dp))
+        // Посилання між паролем і кнопкою: 39 dp на телефоні, 35 dp на десктопі, базова лінія на 23 dp
+        val linkHeight = if (spec.isExpanded) 35.dp else 39.dp
+        Box(Modifier.fillMaxWidth().height(linkHeight), contentAlignment = Alignment.TopCenter) {
+            AuthLink(
+                text = "Forgot your password?",
+                fontSize = 14.sp,
+                enabled = !state.isBusy,
+                onClick = onForgotPassword,
+                modifier = Modifier.baselineSlot(linkHeight, 23.dp),
+            )
         }
+        // Місця під помилку в макеті немає: один зарезервований рядок, щоб форма не стрибала
+        AuthMessage(
+            message = state.errorMessage ?: state.loginError ?: state.passwordError,
+            height = AuthMessageHeight,
+        )
         AuthPrimaryButton(
             text = "Sign in",
             isLoading = state.isLoading,
@@ -93,6 +100,6 @@ fun LoginScreen(
             enabled = !state.isBusy,
             onClick = onOpenRegister,
         )
-        Spacer(Modifier.height(50.dp))
+        Spacer(Modifier.height(if (spec.isExpanded) 28.dp else 24.dp))
     }
 }

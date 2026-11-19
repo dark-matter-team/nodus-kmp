@@ -15,7 +15,13 @@ data object RegisterRoute
 data object ForgotPasswordRoute
 
 @Serializable
-data class ResetPasswordRoute(val email: String)
+data class VerifyCodeRoute(val email: String)
+
+@Serializable
+data class NewPasswordRoute(val email: String, val code: String)
+
+@Serializable
+data object PasswordChangedRoute
 
 @Serializable
 data object CatalogRoute

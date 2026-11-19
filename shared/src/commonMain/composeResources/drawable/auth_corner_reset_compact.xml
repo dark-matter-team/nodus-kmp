@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кутова дужка картки відновлення пароля з мобільного макета (Figma: Forgot Password D Mobile, Vector 1) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="17.7791dp"
+    android:height="11.132dp"
+    android:viewportWidth="17.7791"
+    android:viewportHeight="11.132">
+    <path
+        android:pathData="M1.5 11.132V6.958C1.5 1.892 7.6047 1.5 7.6047 1.5L17.7791 1.5"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFFFF" />
+</vector>

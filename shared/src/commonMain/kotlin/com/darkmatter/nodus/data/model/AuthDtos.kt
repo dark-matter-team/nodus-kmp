@@ -24,6 +24,9 @@ data class GoogleAuthRequest(val idToken: String)
 data class ForgotPasswordRequest(val email: String)
 
 @Serializable
+data class VerifyResetCodeRequest(val email: String, val code: String)
+
+@Serializable
 data class ResetPasswordRequest(
     val email: String,
     val code: String,

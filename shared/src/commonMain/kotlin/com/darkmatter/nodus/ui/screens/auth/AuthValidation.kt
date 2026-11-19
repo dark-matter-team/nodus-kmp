@@ -54,13 +54,4 @@ object AuthValidation {
 
     fun validatePasswordConfirmation(password: String, confirmation: String): String? =
         if (password != confirmation) "Passwords do not match" else null
-
-    fun validateResetCode(code: String): String? {
-        val value = code.trim()
-        return if (value.length != RESET_CODE_LENGTH || !value.all { it.isDigit() }) {
-            "The code must be $RESET_CODE_LENGTH digits"
-        } else {
-            null
-        }
-    }
 }

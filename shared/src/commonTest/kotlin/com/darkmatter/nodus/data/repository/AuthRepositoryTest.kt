@@ -57,6 +57,30 @@ class AuthRepositoryTest {
     }
 
     @Test
+    fun verifyResetCodeSendsTrimmedEmailAndCode() = runBlocking {
+        val env = AuthTestEnvironment { FakeResponse(ok, """{"message":"Code is valid"}""") }
+
+        val result = env.repository.verifyResetCode(" test1@example.com ", " 123456 ")
+
+        assertIs<ApiResult.Success<*>>(result)
+        val request = env.engine.requests.single()
+        assertEquals("/api/auth/verify-reset-code", request.url.encodedPath)
+        val body = Json.parseToJsonElement(request.bodyText()).jsonObject
+        assertEquals("test1@example.com", body["email"]?.jsonPrimitive?.content)
+        assertEquals("123456", body["code"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun invalidResetCodeKeepsStatusForScreen() = runBlocking {
+        // Зараз бекенд віддає тут {"message"} замість {"error"}: екран орієнтується на код 400, а не на текст
+        val env = AuthTestEnvironment { FakeResponse(badRequest, """{"message":"Invalid or expired code"}""") }
+
+        val result = env.repository.verifyResetCode("test1@example.com", "000000")
+
+        assertEquals(400, assertIs<ApiResult.Error>(result).code)
+    }
+
+    @Test
     fun networkFailureGivesConnectionMessage() = runBlocking {
         val env = AuthTestEnvironment { throw IllegalStateException("connection refused") }
 

@@ -16,8 +16,10 @@ import com.darkmatter.nodus.ui.screens.CatalogScreen
 import com.darkmatter.nodus.ui.screens.SettingsScreen
 import com.darkmatter.nodus.ui.screens.auth.ForgotPasswordScreen
 import com.darkmatter.nodus.ui.screens.auth.LoginScreen
+import com.darkmatter.nodus.ui.screens.auth.NewPasswordScreen
+import com.darkmatter.nodus.ui.screens.auth.PasswordChangedScreen
 import com.darkmatter.nodus.ui.screens.auth.RegisterScreen
-import com.darkmatter.nodus.ui.screens.auth.ResetPasswordScreen
+import com.darkmatter.nodus.ui.screens.auth.VerifyCodeScreen
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 
@@ -82,18 +84,39 @@ fun AppNavHost(
 
         composable<ForgotPasswordRoute> {
             ForgotPasswordScreen(
-                onCodeSent = { email -> navController.navigate(ResetPasswordRoute(email)) },
+                onCodeSent = { email -> navController.navigate(VerifyCodeRoute(email)) },
                 onBack = { navController.popBackStack() },
             )
         }
 
-        composable<ResetPasswordRoute> { entry ->
-            val route = entry.toRoute<ResetPasswordRoute>()
-            ResetPasswordScreen(
+        composable<VerifyCodeRoute> { entry ->
+            val route = entry.toRoute<VerifyCodeRoute>()
+            VerifyCodeScreen(
                 email = route.email,
-                // Повертаємось на вже наявний у стеку екран входу, прибираючи екрани відновлення
-                onDone = { navController.popBackStack<LoginRoute>(inclusive = false) },
-                onBack = { navController.popBackStack() },
+                onCodeVerified = { code -> navController.navigate(NewPasswordRoute(route.email, code)) },
+                // "Change Email" повертає на введення email
+                onChangeEmail = { navController.popBackStack() },
+            )
+        }
+
+        composable<NewPasswordRoute> { entry ->
+            val route = entry.toRoute<NewPasswordRoute>()
+            NewPasswordScreen(
+                email = route.email,
+                code = route.code,
+                onPasswordReset = {
+                    // Після зміни пароля назад до коду чи нового пароля вже не повертаємось
+                    navController.navigate(PasswordChangedRoute) {
+                        popUpTo<ForgotPasswordRoute> { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable<PasswordChangedRoute> {
+            PasswordChangedScreen(
+                // Повертаємось на вже наявний у стеку екран входу
+                onSignIn = { navController.popBackStack<LoginRoute>(inclusive = false) },
             )
         }
 

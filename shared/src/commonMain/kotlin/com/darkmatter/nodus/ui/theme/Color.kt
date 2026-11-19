@@ -39,7 +39,27 @@ object NodusColors {
     val SecondaryBorderDark = Color(0xFF1A1E61)
     val SecondaryBorderLight = Color(0xFFBE91E3)
 
-    // Немає в макетах: введений текст і помилки, підібрано під палітру до появи дизайну
+    // Введеного тексту немає в макетах: колір підпису START з онбордингу
     val FieldText = StartLabel
-    val Error = Color(0xFFFF8FA3)
+
+    // Рамка поля в режимі color-dodge; у фокусі світліша (Figma: Forgot Password, New Password)
+    val FieldBorder = Color(0xFF0E1782)
+    val FieldBorderFocused = Color(0xFF5561E1)
+
+    // Помилка з макета "Invalid Recovery code": червона рамка, червонувата заливка soft-light і текст
+    val ErrorBorder = Color(0xFF920215)
+    val ErrorFill = Color(0xFFFF0000).copy(alpha = 0.47f)
+    val ErrorText = Color(0xFFF1BBC2)
+
+    // Відновлення пароля
+    val Link = Color(0xFF4455D5)
+    val Hint = Color(0xFFC5CEF6)
+    val CodeMessage = Color(0xFFBCC6FF)
+    val SuccessTitle = Color(0xFFC7CEEF)
+
+    // Кнопка Save Password і Sign In на екрані успіху: два шари soft-light. Нижній шар
+    // на мобільному світлий, на десктопі фіолетовий; верхній однаковий
+    val AccentButtonFillBottomCompact = Color(0xFFE6E1FF).copy(alpha = 0.47f)
+    val AccentButtonFillBottomExpanded = Color(0xFF5F0077).copy(alpha = 0.47f)
+    val AccentButtonFillTop = Color(0xFF7B67DF).copy(alpha = 0.47f)
 }

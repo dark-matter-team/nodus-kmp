@@ -83,13 +83,4 @@ class AuthValidationTest {
         assertNull(AuthValidation.validatePasswordConfirmation("Passw0rd!", "Passw0rd!"))
         assertEquals("Passwords do not match", AuthValidation.validatePasswordConfirmation("Passw0rd!", "Passw0rd"))
     }
-
-    @Test
-    fun resetCodeMustBeSixDigits() {
-        assertNull(AuthValidation.validateResetCode("123456"))
-        assertNull(AuthValidation.validateResetCode(" 123456 "))
-        assertNotNull(AuthValidation.validateResetCode("12345"))
-        assertNotNull(AuthValidation.validateResetCode("1234567"))
-        assertNotNull(AuthValidation.validateResetCode("12345a"))
-    }
 }

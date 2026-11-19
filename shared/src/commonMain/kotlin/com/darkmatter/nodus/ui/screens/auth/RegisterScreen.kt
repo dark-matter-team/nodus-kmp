@@ -37,7 +37,7 @@ fun RegisterScreen(
             value = state.email,
             onValueChange = viewModel::onEmailChange,
             placeholder = "Email",
-            error = state.emailError,
+            isError = state.emailError != null,
             enabled = !state.isBusy,
             keyboardType = KeyboardType.Email,
         )
@@ -46,7 +46,7 @@ fun RegisterScreen(
             value = state.nickname,
             onValueChange = viewModel::onNicknameChange,
             placeholder = "Username",
-            error = state.nicknameError,
+            isError = state.nicknameError != null,
             enabled = !state.isBusy,
         )
         Spacer(Modifier.height(13.dp))
@@ -54,7 +54,7 @@ fun RegisterScreen(
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             placeholder = "Password",
-            error = state.passwordError,
+            isError = state.passwordError != null,
             enabled = !state.isBusy,
             isPassword = true,
         )
@@ -63,16 +63,17 @@ fun RegisterScreen(
             value = state.passwordConfirmation,
             onValueChange = viewModel::onPasswordConfirmationChange,
             placeholder = "Repeat your password",
-            error = state.passwordConfirmationError,
+            isError = state.passwordConfirmationError != null,
             enabled = !state.isBusy,
             imeAction = ImeAction.Done,
             isPassword = true,
         )
-        Spacer(Modifier.height(13.dp))
-        state.errorMessage?.let {
-            AuthErrorText(it)
-            Spacer(Modifier.height(8.dp))
-        }
+        // Відступ 13 dp з макета плюс зарезервований рядок під помилку, щоб форма не стрибала
+        AuthMessage(
+            message = state.errorMessage ?: state.emailError ?: state.nicknameError ?: state.passwordError
+                ?: state.passwordConfirmationError,
+            height = 13.dp + AuthMessageHeight,
+        )
         AuthPrimaryButton(
             text = "Register",
             isLoading = state.isLoading,

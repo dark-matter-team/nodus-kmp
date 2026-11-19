@@ -11,6 +11,7 @@ import com.darkmatter.nodus.data.model.LoginRequest
 import com.darkmatter.nodus.data.model.RegisterRequest
 import com.darkmatter.nodus.data.model.ResetPasswordRequest
 import com.darkmatter.nodus.data.model.UserDto
+import com.darkmatter.nodus.data.model.VerifyResetCodeRequest
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
@@ -44,6 +45,10 @@ class AuthRepository(
 
     suspend fun forgotPassword(email: String): ApiResult<String?> =
         safeCall { api.forgotPassword(ForgotPasswordRequest(email.trim())).message }
+
+    /** Перевіряє код з листа до введення нового пароля; сам код лишається дійсним для [resetPassword]. */
+    suspend fun verifyResetCode(email: String, code: String): ApiResult<String?> =
+        safeCall { api.verifyResetCode(VerifyResetCodeRequest(email.trim(), code.trim())).message }
 
     suspend fun resetPassword(email: String, code: String, newPassword: String): ApiResult<String?> =
         safeCall { api.resetPassword(ResetPasswordRequest(email.trim(), code.trim(), newPassword)).message }

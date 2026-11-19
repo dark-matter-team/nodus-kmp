@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кутова дужка картки відновлення пароля з десктопного макета (Figma: Forgot Password D, Vector 1) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="26.523dp"
+    android:height="14.63dp"
+    android:viewportWidth="26.523"
+    android:viewportHeight="14.63">
+    <path
+        android:pathData="M1.5 14.63V8.941C1.5 2.034 10.884 1.5 10.884 1.5L26.523 1.5"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFFFF" />
+</vector>
