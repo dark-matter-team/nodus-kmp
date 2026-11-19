@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,10 +31,11 @@ private val CompactSizes = OnboardingSizes(
     stepFontSize = 14.sp,
     titleFontSize = 40.sp,
     descriptionFontSize = 12.sp,
-    buttonFontSize = 14.sp,
-    buttonSize = DpSize(80.dp, 20.dp),
-    buttonsStartPadding = 27.dp,
-    buttonsEndPadding = 28.dp,
+    buttonFontSize = 20.sp,
+    buttonSize = DpSize(104.dp, 26.dp),
+    buttonsHorizontalPadding = 18.dp,
+    dotSize = 15.dp,
+    dotSpacing = 22.dp,
 )
 
 private val ExpandedDesignWidth = 1512.dp
@@ -45,10 +45,11 @@ private val ExpandedSizes = OnboardingSizes(
     stepFontSize = 24.sp,
     titleFontSize = 48.sp,
     descriptionFontSize = 16.sp,
-    buttonFontSize = 24.sp,
-    buttonSize = DpSize(213.dp, 46.dp),
-    buttonsStartPadding = 104.dp,
-    buttonsEndPadding = 104.dp,
+    buttonFontSize = 32.sp,
+    buttonSize = DpSize(282.dp, 61.dp),
+    buttonsHorizontalPadding = 104.dp,
+    dotSize = 20.dp,
+    dotSpacing = 29.dp,
 )
 
 @Composable
@@ -95,15 +96,14 @@ private fun CompactOnboarding(
     onNext: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
-        TopBar(height = 77.dp, iconTop = 28.dp, iconEnd = 24.dp)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(64.dp))
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             CompactSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = CompactSizes)
         }
-        Spacer(Modifier.height(54.dp))
-        NavigationRow(pagerState, isLastPage, CompactSizes, lightStartFill = true, onSkip = onSkip, onNext = onNext)
-        // У макеті 84 dp до краю фрейму; частину з них тут займає системна панель навігації
-        Spacer(Modifier.height(50.dp))
+        Spacer(Modifier.height(51.dp))
+        NavigationRow(pagerState, isLastPage, CompactSizes, onSkip = onSkip, onNext = onNext)
+        // У макеті 81 dp до краю фрейму; частину з них тут займає системна панель навігації
+        Spacer(Modifier.height(47.dp))
     }
 }
 
@@ -114,28 +114,14 @@ private fun ExpandedOnboarding(
     onSkip: () -> Unit,
     onNext: () -> Unit,
 ) {
-    Box(Modifier.fillMaxSize()) {
-        TopBar(height = 95.dp, iconTop = 36.dp, iconEnd = 32.dp)
-        Column(Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(166.dp))
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
-                WideSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = ExpandedSizes)
-            }
-            Spacer(Modifier.height(69.dp))
-            NavigationRow(pagerState, isLastPage, ExpandedSizes, lightStartFill = false, onSkip = onSkip, onNext = onNext)
-            Spacer(Modifier.height(51.dp))
+    Column(Modifier.fillMaxSize()) {
+        Spacer(Modifier.height(124.dp))
+        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            WideSlidePage(slide = onboardingSlides[page], step = stepLabel(page), sizes = ExpandedSizes)
         }
-    }
-}
-
-@Composable
-private fun TopBar(height: Dp, iconTop: Dp, iconEnd: Dp) {
-    Box(Modifier.fillMaxWidth().height(height)) {
-        ThemeToggleIcon(
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = iconTop, end = iconEnd),
-        )
+        Spacer(Modifier.height(96.dp))
+        NavigationRow(pagerState, isLastPage, ExpandedSizes, onSkip = onSkip, onNext = onNext)
+        Spacer(Modifier.height(51.dp))
     }
 }
 
@@ -144,7 +130,6 @@ private fun NavigationRow(
     pagerState: PagerState,
     isLastPage: Boolean,
     sizes: OnboardingSizes,
-    lightStartFill: Boolean,
     onSkip: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -154,21 +139,21 @@ private fun NavigationRow(
             onClick = onSkip,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = sizes.buttonsStartPadding),
+                .padding(start = sizes.buttonsHorizontalPadding),
         )
         PageDots(
             count = onboardingSlides.size,
             current = pagerState.currentPage,
+            sizes = sizes,
             modifier = Modifier.align(Alignment.Center),
         )
         NextButton(
             isLastPage = isLastPage,
-            lightFill = lightStartFill,
             sizes = sizes,
             onClick = onNext,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = sizes.buttonsEndPadding),
+                .padding(end = sizes.buttonsHorizontalPadding),
         )
     }
 }

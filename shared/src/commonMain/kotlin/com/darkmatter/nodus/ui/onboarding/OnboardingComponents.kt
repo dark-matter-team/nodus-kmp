@@ -14,20 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.shadow.DropShadowPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -37,8 +31,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.darkmatter.nodus.ui.theme.NodusColors
 import com.darkmatter.nodus.ui.theme.khandFontFamily
+import com.darkmatter.nodus.ui.theme.outerShadow
 import nodus.shared.generated.resources.Res
-import nodus.shared.generated.resources.ic_theme_toggle
 import nodus.shared.generated.resources.onboarding_dot_active
 import nodus.shared.generated.resources.onboarding_dot_inactive
 import org.jetbrains.compose.resources.painterResource
@@ -52,13 +46,12 @@ internal data class OnboardingSizes(
     val descriptionFontSize: TextUnit,
     val buttonFontSize: TextUnit,
     val buttonSize: DpSize,
-    val buttonsStartPadding: Dp,
-    val buttonsEndPadding: Dp,
+    val buttonsHorizontalPadding: Dp,
+    val dotSize: Dp,
+    val dotSpacing: Dp,
 )
 
 private val ButtonShape = RoundedCornerShape(10.dp)
-private val DotSize = 20.dp
-private val DotSpacing = 29.dp
 
 /**
  * Текстовий стиль з макета. Висота рядка дорівнює розміру шрифту, як у текстових блоках Figma,
@@ -72,44 +65,34 @@ internal fun onboardingTextStyle(
     shadowOffsetY: Dp,
     shadowColor: Color = NodusColors.Shadow,
     shadowBlur: Dp = 4.dp,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textAlign: TextAlign = TextAlign.Center,
 ): TextStyle {
     val density = LocalDensity.current
     return TextStyle(
         fontFamily = fontFamily,
+        fontWeight = fontWeight,
         fontSize = fontSize,
         lineHeight = fontSize,
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
         color = color,
-        textAlign = TextAlign.Center,
+        textAlign = textAlign,
         shadow = with(density) {
             TextShadow(color = shadowColor, offset = Offset(0f, shadowOffsetY.toPx()), blurRadius = shadowBlur.toPx())
         },
     )
 }
 
-/**
- * Іконка перемикання теми. 40×40 враховує тінь навколо іконки 32×32.
- * Поки декоративна: світлої теми ще нема.
- */
 @Composable
-internal fun ThemeToggleIcon(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(Res.drawable.ic_theme_toggle),
-        contentDescription = null,
-        modifier = modifier.size(40.dp),
-    )
-}
-
-@Composable
-internal fun PageDots(count: Int, current: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(DotSpacing)) {
+internal fun PageDots(count: Int, current: Int, sizes: OnboardingSizes, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(sizes.dotSpacing)) {
         repeat(count) { index ->
             Image(
                 painter = painterResource(
                     if (index == current) Res.drawable.onboarding_dot_active else Res.drawable.onboarding_dot_inactive,
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(DotSize),
+                modifier = Modifier.size(sizes.dotSize),
             )
         }
     }
@@ -138,22 +121,14 @@ internal fun SkipButton(sizes: OnboardingSizes, onClick: () -> Unit, modifier: M
     }
 }
 
-/**
- * NEXT, а на останньому слайді START. [lightFill] вмикає світлу заливку START з мобільного макета;
- * на десктопі START має ту саму темну заливку, що й NEXT.
- */
+/** NEXT, а на останньому слайді START: та сама заливка, інший колір підпису. */
 @Composable
 internal fun NextButton(
     isLastPage: Boolean,
-    lightFill: Boolean,
     sizes: OnboardingSizes,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val useLightFill = isLastPage && lightFill
-    val fillTop = if (useLightFill) NodusColors.StartFillTop else NodusColors.NextFillTop
-    val fillBottom = if (useLightFill) NodusColors.StartFillBottom else NodusColors.NextFillBottom
-
     Box(
         modifier = modifier
             .size(sizes.buttonSize)
@@ -161,8 +136,8 @@ internal fun NextButton(
             // Два напівпрозорі шари в режимі soft-light, як у Figma; малюються без окремого шару, щоб змішуватись з фоном
             .drawBehind {
                 val corner = CornerRadius(10.dp.toPx())
-                drawRoundRect(color = fillBottom, cornerRadius = corner, blendMode = BlendMode.Softlight)
-                drawRoundRect(color = fillTop, cornerRadius = corner, blendMode = BlendMode.Softlight)
+                drawRoundRect(color = NodusColors.NextFillBottom, cornerRadius = corner, blendMode = BlendMode.Softlight)
+                drawRoundRect(color = NodusColors.NextFillTop, cornerRadius = corner, blendMode = BlendMode.Softlight)
             }
             .clip(ButtonShape)
             .clickable(onClick = onClick),
@@ -178,19 +153,5 @@ internal fun NextButton(
                 shadowColor = if (isLastPage) NodusColors.StartLabelShadow else NodusColors.Shadow,
             ),
         )
-    }
-}
-
-/**
- * Тінь лише ззовні фігури, як CSS box-shadow у макеті. Звичайний dropShadow затемнив би
- * й прозору середину кнопки SKIP.
- */
-private fun Modifier.outerShadow(shape: Shape, shadow: BoxShadow): Modifier = drawWithCache {
-    val painter = DropShadowPainter(shape, shadow)
-    val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
-    onDrawBehind {
-        clipPath(outline, clipOp = ClipOp.Difference) {
-            with(painter) { draw(size) }
-        }
     }
 }
