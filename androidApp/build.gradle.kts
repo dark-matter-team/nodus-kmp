@@ -39,6 +39,26 @@ if (googleWebClientId.isNotEmpty() &&
     )
 }
 
+// Адреса бекенда: debug ходить на локальний бекенд (10.0.2.2 це комп'ютер для емулятора),
+// release на прод з local.properties (api.prodBaseUrl), поки прод не розгорнуто (KNU-63)
+val apiDebugBaseUrl = "http://10.0.2.2:5033"
+val apiProdBaseUrl: String = localProperties.getProperty("api.prodBaseUrl", "").trim()
+
+if (apiProdBaseUrl.isNotEmpty() && !apiProdBaseUrl.startsWith("https://")) {
+    throw GradleException("local.properties: api.prodBaseUrl має починатися з https://")
+}
+
+// Release без прод-адреси ходив би на локальну адресу, тож таку збірку зупиняємо одразу
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    // Локальна копія: дія задачі не може посилатися на об'єкт скрипта через кеш конфігурації
+    val prodBaseUrl = apiProdBaseUrl
+    doFirst {
+        if (prodBaseUrl.isEmpty()) {
+            throw GradleException("Для release-збірки задайте api.prodBaseUrl у local.properties")
+        }
+    }
+}
+
 android {
     namespace = "com.darkmatter.nodus"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -58,7 +78,11 @@ android {
         }
     }
     buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"$apiDebugBaseUrl\"")
+        }
         release {
+            buildConfigField("String", "API_BASE_URL", "\"$apiProdBaseUrl\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

@@ -45,11 +45,32 @@ tasks.withType<JavaExec>().matching { it.name == "hotRun" }.configureEach {
     jvmArgs(googleDesktopJvmArgs)
 }
 
+// Прод-адреса бекенда для запакованого застосунку (msi/dmg/deb). Запуск з IDE завжди ходить
+// на локальний бекенд: main.kt вмикає прод лише в запакованому застосунку
+val apiProdBaseUrl: String = localProperties.getProperty("api.prodBaseUrl", "").trim()
+
+if (apiProdBaseUrl.isNotEmpty() && !apiProdBaseUrl.startsWith("https://")) {
+    throw GradleException("local.properties: api.prodBaseUrl має починатися з https://")
+}
+
+// Запакований застосунок без прод-адреси ходив би на localhost, тож пакування зупиняємо одразу
+tasks.matching { it.name.startsWith("package") || (it.name.startsWith("create") && it.name.endsWith("Distributable")) }
+    .configureEach {
+        // Локальна копія: дія задачі не може посилатися на об'єкт скрипта через кеш конфігурації
+        val prodBaseUrl = apiProdBaseUrl
+        doFirst {
+            if (prodBaseUrl.isEmpty()) {
+                throw GradleException("Для пакування застосунку задайте api.prodBaseUrl у local.properties")
+            }
+        }
+    }
+
 compose.desktop {
     application {
         mainClass = "com.darkmatter.nodus.MainKt"
 
         jvmArgs += googleDesktopJvmArgs
+        jvmArgs += "-Dnodus.api.prodBaseUrl=$apiProdBaseUrl"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
