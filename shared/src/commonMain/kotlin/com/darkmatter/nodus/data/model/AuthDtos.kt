@@ -51,7 +51,3 @@ data class AuthResponse(
 
 @Serializable
 data class MessageResponse(val message: String? = null)
-
-/** Тіло будь-якої помилки бекенда: {"error": "текст українською"}. */
-@Serializable
-data class ErrorResponse(val error: String? = null)
