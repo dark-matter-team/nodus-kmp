@@ -26,8 +26,6 @@ import com.darkmatter.nodus.ui.shell.AppShell
 
 @Composable
 fun AppNavHost(
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     sessionManager: SessionManager = AppContainer.sessionManager,
     onboardingStorage: OnboardingStorage = AppContainer.onboardingStorage,
 ) {
@@ -77,7 +75,9 @@ fun AppNavHost(
                 onForgotPassword = { navController.navigate(ForgotPasswordRoute) },
             )
         }
-        composable<MainRoute> { AppShell(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme) }
+        composable<MainRoute> {
+            AppShell(onOpenSettings = { navController.navigate(SettingsRoute) })
+        }
 
 
         composable<RegisterRoute> {

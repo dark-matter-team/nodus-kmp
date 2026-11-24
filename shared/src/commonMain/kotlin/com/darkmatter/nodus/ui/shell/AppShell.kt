@@ -29,7 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.darkmatter.nodus.ui.screens.CatalogScreen
+import com.darkmatter.nodus.ui.theme.LocalThemeState
 import com.darkmatter.nodus.ui.theme.khandFontFamily
 import nodus.shared.generated.resources.Res
 import nodus.shared.generated.resources.ic_moon
@@ -89,8 +90,12 @@ private val LightPalette = ShellPalette(
 )
 
 @Composable
-fun AppShell(isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
-    var selectedTab by remember { mutableStateOf(ShellTab.GoalLab) }
+fun AppShell(onOpenSettings: () -> Unit) {
+    // rememberSaveable: вибрана вкладка переживає поворот екрана й перезапуск процесу на Android
+    var selectedTab by rememberSaveable { mutableStateOf(ShellTab.GoalLab) }
+    // Тему беремо з CompositionLocal, який надає App(): AppNavHost про тему нічого не знає
+    val themeState = LocalThemeState.current
+    val isDarkTheme = themeState.isDark
     val palette = if (isDarkTheme) DarkPalette else LightPalette
 
     // Surface дає фон із теми й правильний колір тексту
@@ -105,16 +110,24 @@ fun AppShell(isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
                         selected = selectedTab,
                         onSelect = { selectedTab = it },
                         isDarkTheme = isDarkTheme,
-                        onToggleTheme = onToggleTheme,
+                        onToggleTheme = themeState.toggle,
                         username = "USERNAME", // TODO: підставити ім'я з GET /api/users/me, коли буде API-клієнт
                         palette = palette,
                     )
-                    TabContent(tab = selectedTab, modifier = Modifier.weight(1f).fillMaxHeight())
+                    TabContent(
+                        tab = selectedTab,
+                        onOpenSettings = onOpenSettings,
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    )
                 }
             } else {
                 // statusBarsPadding: вміст опускається під системний рядок із годинником (на десктопі = 0)
                 Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-                    TabContent(tab = selectedTab, modifier = Modifier.weight(1f).fillMaxWidth())
+                    TabContent(
+                        tab = selectedTab,
+                        onOpenSettings = onOpenSettings,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
                     BottomBar(selected = selectedTab, onSelect = { selectedTab = it }, palette = palette)
                 }
             }
@@ -123,11 +136,15 @@ fun AppShell(isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
 }
 
 @Composable
-private fun TabContent(tab: ShellTab, modifier: Modifier = Modifier) {
+private fun TabContent(
+    tab: ShellTab,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(modifier = modifier) {
         when (tab) {
             ShellTab.GoalLab -> Text("Goal Lab (заглушка)")
-            ShellTab.StarMap -> CatalogScreen(onOpenSettings = {})
+            ShellTab.StarMap -> CatalogScreen(onOpenSettings = onOpenSettings)
             ShellTab.Focus -> Text("Focus (заглушка)")
             ShellTab.Profile -> Text("Profile (заглушка)")
         }
