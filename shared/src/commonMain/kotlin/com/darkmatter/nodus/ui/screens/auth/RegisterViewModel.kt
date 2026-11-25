@@ -6,6 +6,7 @@ import com.darkmatter.nodus.core.auth.GoogleSignInProvider
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.repository.AuthRepository
+import com.darkmatter.nodus.ui.common.userMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,7 +77,10 @@ class RegisterViewModel(
         viewModelScope.launch {
             when (val result = repository.register(state.email, state.nickname, state.password)) {
                 is ApiResult.Success -> _uiState.update { it.copy(isLoading = false, isRegistered = true) }
-                is ApiResult.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                is ApiResult.Error -> {
+                    val message = result.userMessage()
+                    _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+                }
             }
         }
     }
@@ -90,7 +94,10 @@ class RegisterViewModel(
             when (val result = repository.signInWithGoogle(provider)) {
                 null -> _uiState.update { it.copy(isGoogleLoading = false) }
                 is ApiResult.Success -> _uiState.update { it.copy(isGoogleLoading = false, isRegistered = true) }
-                is ApiResult.Error -> _uiState.update { it.copy(isGoogleLoading = false, errorMessage = result.message) }
+                is ApiResult.Error -> {
+                    val message = result.userMessage()
+                    _uiState.update { it.copy(isGoogleLoading = false, errorMessage = message) }
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.darkmatter.nodus.core.network
 
-import com.darkmatter.nodus.core.config.getBaseUrl
+import com.darkmatter.nodus.core.config.ApiConfig
 import com.darkmatter.nodus.core.session.SessionManager
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -41,7 +41,7 @@ private fun HttpClientConfig<*>.configure(sessionManager: SessionManager, httpLo
         socketTimeoutMillis = 15_000
     }
     defaultRequest {
-        url(getBaseUrl())
+        url(ApiConfig.baseUrl)
         contentType(ContentType.Application.Json)
     }
     install(BearerAuthPlugin) {

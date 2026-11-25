@@ -34,22 +34,30 @@ if (googleDesktopClientId.isNotEmpty() &&
     )
 }
 
-val googleDesktopJvmArgs = listOf(
+// Адреса бекенда з local.properties (api.baseUrl), за замовчуванням локальний бекенд
+val apiBaseUrl: String = localProperties.getProperty("api.baseUrl", "http://localhost:5033").trim()
+
+if (!Regex("""^https?://\S+$""").matches(apiBaseUrl)) {
+    throw GradleException("local.properties: api.baseUrl має бути адресою з http:// або https://")
+}
+
+val desktopJvmArgs = listOf(
     "-Dnodus.google.desktopClientId=$googleDesktopClientId",
     "-Dnodus.google.desktopClientSecret=$googleDesktopClientSecret",
+    "-Dnodus.api.baseUrl=$apiBaseUrl",
 )
 
 // jvmArgs з compose.desktop отримують лише run і дистрибутив, а запуск з IDE йде через hotRun
-// (Compose Hot Reload), тому йому ключі передаємо окремо.
+// (Compose Hot Reload), тому йому їх передаємо окремо.
 tasks.withType<JavaExec>().matching { it.name == "hotRun" }.configureEach {
-    jvmArgs(googleDesktopJvmArgs)
+    jvmArgs(desktopJvmArgs)
 }
 
 compose.desktop {
     application {
         mainClass = "com.darkmatter.nodus.MainKt"
 
-        jvmArgs += googleDesktopJvmArgs
+        jvmArgs += desktopJvmArgs
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

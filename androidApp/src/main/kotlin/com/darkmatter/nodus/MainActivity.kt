@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.tooling.preview.Preview
 import com.darkmatter.nodus.core.auth.LocalGoogleWebClientId
+import com.darkmatter.nodus.core.config.ApiConfig
 
 class MainActivity : ComponentActivity() {
 
@@ -29,6 +30,8 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
+        // Адреса бекенда з local.properties (api.baseUrl), див. build.gradle.kts
+        ApiConfig.setBaseUrl(BuildConfig.API_BASE_URL)
         requestLocalNetworkAccessForDebug()
 
         setContent {

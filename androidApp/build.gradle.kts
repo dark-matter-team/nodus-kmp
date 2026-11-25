@@ -39,6 +39,14 @@ if (googleWebClientId.isNotEmpty() &&
     )
 }
 
+// Адреса бекенда з local.properties (api.baseUrl). За замовчуванням локальний бекенд:
+// 10.0.2.2 це комп'ютер розробника з погляду емулятора
+val apiBaseUrl: String = localProperties.getProperty("api.baseUrl", "http://10.0.2.2:5033").trim()
+
+if (!Regex("""^https?://\S+$""").matches(apiBaseUrl)) {
+    throw GradleException("local.properties: api.baseUrl має бути адресою з http:// або https://")
+}
+
 android {
     namespace = "com.darkmatter.nodus"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -51,6 +59,7 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
     packaging {
         resources {

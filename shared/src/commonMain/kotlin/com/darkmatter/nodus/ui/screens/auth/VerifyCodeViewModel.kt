@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.repository.AuthRepository
+import com.darkmatter.nodus.ui.common.userMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +56,10 @@ class VerifyCodeViewModel(
                 is ApiResult.Success -> _uiState.update {
                     it.copy(isLoading = false, code = "", infoMessage = "We sent a new code")
                 }
-                is ApiResult.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                is ApiResult.Error -> {
+                    val message = result.userMessage()
+                    _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+                }
             }
         }
     }
@@ -66,15 +70,18 @@ class VerifyCodeViewModel(
         viewModelScope.launch {
             when (val result = repository.verifyResetCode(email, code)) {
                 is ApiResult.Success -> _uiState.update { it.copy(isLoading = false, verifiedCode = code) }
-                is ApiResult.Error -> _uiState.update {
+                is ApiResult.Error -> {
                     // 400 означає неправильний або прострочений код: текст з макета, клітинки порожні
                     val invalid = result.code == HTTP_BAD_REQUEST
-                    it.copy(
-                        isLoading = false,
-                        code = if (invalid) "" else it.code,
-                        isCodeInvalid = invalid,
-                        errorMessage = if (invalid) INVALID_CODE_MESSAGE else result.message,
-                    )
+                    val message = if (invalid) INVALID_CODE_MESSAGE else result.userMessage()
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            code = if (invalid) "" else it.code,
+                            isCodeInvalid = invalid,
+                            errorMessage = message,
+                        )
+                    }
                 }
             }
         }

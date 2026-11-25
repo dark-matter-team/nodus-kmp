@@ -6,6 +6,7 @@ import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.model.UserDto
 import com.darkmatter.nodus.data.repository.AuthRepository
+import com.darkmatter.nodus.ui.common.userMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +40,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             _uiState.value = when (val result = repository.getCurrentUser()) {
                 is ApiResult.Success -> SettingsUiState.Success(result.data)
-                is ApiResult.Error -> SettingsUiState.Error(result.message)
+                is ApiResult.Error -> SettingsUiState.Error(result.userMessage())
             }
         }
     }
