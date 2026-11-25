@@ -39,24 +39,12 @@ if (googleWebClientId.isNotEmpty() &&
     )
 }
 
-// Адреса бекенда: debug ходить на локальний бекенд (10.0.2.2 це комп'ютер для емулятора),
-// release на прод з local.properties (api.prodBaseUrl), поки прод не розгорнуто (KNU-63)
-val apiDebugBaseUrl = "http://10.0.2.2:5033"
-val apiProdBaseUrl: String = localProperties.getProperty("api.prodBaseUrl", "").trim()
+// Адреса бекенда з local.properties (api.baseUrl). За замовчуванням локальний бекенд:
+// 10.0.2.2 це комп'ютер розробника з погляду емулятора
+val apiBaseUrl: String = localProperties.getProperty("api.baseUrl", "http://10.0.2.2:5033").trim()
 
-if (apiProdBaseUrl.isNotEmpty() && !apiProdBaseUrl.startsWith("https://")) {
-    throw GradleException("local.properties: api.prodBaseUrl має починатися з https://")
-}
-
-// Release без прод-адреси ходив би на локальну адресу, тож таку збірку зупиняємо одразу
-tasks.matching { it.name == "preReleaseBuild" }.configureEach {
-    // Локальна копія: дія задачі не може посилатися на об'єкт скрипта через кеш конфігурації
-    val prodBaseUrl = apiProdBaseUrl
-    doFirst {
-        if (prodBaseUrl.isEmpty()) {
-            throw GradleException("Для release-збірки задайте api.prodBaseUrl у local.properties")
-        }
-    }
+if (!Regex("""^https?://\S+$""").matches(apiBaseUrl)) {
+    throw GradleException("local.properties: api.baseUrl має бути адресою з http:// або https://")
 }
 
 android {
@@ -71,6 +59,7 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
     packaging {
         resources {
@@ -78,11 +67,7 @@ android {
         }
     }
     buildTypes {
-        debug {
-            buildConfigField("String", "API_BASE_URL", "\"$apiDebugBaseUrl\"")
-        }
         release {
-            buildConfigField("String", "API_BASE_URL", "\"$apiProdBaseUrl\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

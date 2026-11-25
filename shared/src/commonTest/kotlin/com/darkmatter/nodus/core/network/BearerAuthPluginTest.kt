@@ -58,7 +58,7 @@ class BearerAuthPluginTest {
 
         val result = env.repository.login("tester1", "wrong-password")
 
-        assertEquals(ApiResult.Error("Невірний email/нікнейм або пароль", 401), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 401, "Невірний email/нікнейм або пароль"), result)
         assertTrue(env.sessionManager.isLoggedIn.value)
         assertEquals("token-123", env.tokenStorage.getToken())
     }

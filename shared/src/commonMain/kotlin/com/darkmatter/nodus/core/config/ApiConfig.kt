@@ -5,9 +5,8 @@ expect fun getBaseUrl(): String
 
 /**
  * Адреса бекенда для поточної збірки. Застосунок задає її на старті з налаштувань збірки:
- * Android з BuildConfig (debug локальна, release прод), Desktop з jvmArgs для запакованого
- * застосунку, iOS з Info.plist (Debug локальна, Release прод). Якщо нічого не задано,
- * використовується локальна адреса [getBaseUrl].
+ * Android і Desktop з api.baseUrl у local.properties (BuildConfig і jvmArgs), iOS з API_BASE_URL
+ * у xcconfig через Info.plist. Якщо нічого не задано, використовується локальна адреса [getBaseUrl].
  */
 object ApiConfig {
 

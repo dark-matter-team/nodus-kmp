@@ -16,13 +16,13 @@ import kotlin.test.assertIs
 class ApiCallTest {
 
     @Test
-    fun timeoutHasOwnKindAndMessage() = runBlocking {
+    fun timeoutHasOwnKindAndNoText() = runBlocking {
         val env = ApiTestEnvironment { throw HttpRequestTimeoutException("http://localhost/api/roadmaps", 15_000) }
 
         val error = assertIs<ApiResult.Error>(env.roadmapRepository.getMyRoadmaps())
 
-        assertEquals(ErrorKind.Timeout, error.kind)
-        assertEquals("Сервер не відповідає. Спробуйте ще раз", error.message)
+        // Текст для тайм-ауту обирає UI з ресурсів, мережевий шар його не формує
+        assertEquals(ApiResult.Error(ErrorKind.Timeout), error)
     }
 
     @Test
@@ -42,10 +42,19 @@ class ApiCallTest {
         val clientError = assertIs<ApiResult.Error>(notFound.roadmapRepository.getRoadmap("r1"))
         val crash = assertIs<ApiResult.Error>(serverError.roadmapRepository.getRoadmap("r1"))
 
-        assertEquals(ErrorKind.Client, clientError.kind)
-        assertEquals("Дерево не знайдено", clientError.message)
-        assertEquals(ErrorKind.Server, crash.kind)
-        assertEquals("Помилка сервера: 500", crash.message)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 404, "Дерево не знайдено"), clientError)
+        // Тіло не {"error"}: тексту немає, лише тип і код
+        assertEquals(ApiResult.Error(ErrorKind.Server, 500), crash)
+    }
+
+    @Test
+    fun onlyRealErrorRangesMapToClientAndServer() {
+        assertEquals(ErrorKind.Client, ErrorKind.fromStatus(400))
+        assertEquals(ErrorKind.Client, ErrorKind.fromStatus(499))
+        assertEquals(ErrorKind.Server, ErrorKind.fromStatus(500))
+        assertEquals(ErrorKind.Server, ErrorKind.fromStatus(599))
+        assertEquals(ErrorKind.Unknown, ErrorKind.fromStatus(302))
+        assertEquals(ErrorKind.Unknown, ErrorKind.fromStatus(600))
     }
 
     @Test

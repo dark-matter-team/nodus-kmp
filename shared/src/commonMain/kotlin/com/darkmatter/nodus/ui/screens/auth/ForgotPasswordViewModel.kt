@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.repository.AuthRepository
+import com.darkmatter.nodus.ui.common.userMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,7 +49,10 @@ class ForgotPasswordViewModel(
         viewModelScope.launch {
             when (val result = repository.forgotPassword(email)) {
                 is ApiResult.Success -> _uiState.update { it.copy(isLoading = false, codeSentTo = email) }
-                is ApiResult.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                is ApiResult.Error -> {
+                    val message = result.userMessage()
+                    _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+                }
             }
         }
     }

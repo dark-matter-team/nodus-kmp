@@ -10,9 +10,7 @@ MARKETING_VERSION=1.0
 // приклад: Secrets.example.xcconfig. Без нього збірка проходить, а вхід через Google не налаштований.
 GOOGLE_IOS_CLIENT_ID=
 
-// Адреса бекенда: Debug на локальний бекенд, Release на прод (API_PROD_BASE_URL у Secrets.xcconfig).
+// Адреса бекенда, за замовчуванням локальний; змінюється в Secrets.xcconfig (API_BASE_URL).
 // "//" у xcconfig починає коментар, тому в адресі пишемо "/$()/": Xcode підставить порожній рядок.
-API_PROD_BASE_URL=
 API_BASE_URL=http:/$()/localhost:5033
-API_BASE_URL[config=Release]=$(API_PROD_BASE_URL)
 #include? "Secrets.xcconfig"

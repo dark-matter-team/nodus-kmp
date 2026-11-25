@@ -3,6 +3,7 @@ package com.darkmatter.nodus.ui.screens.auth
 import com.darkmatter.nodus.core.auth.GoogleSignInProvider
 import com.darkmatter.nodus.core.auth.GoogleSignInResult
 import com.darkmatter.nodus.core.network.ApiResult
+import com.darkmatter.nodus.core.network.ErrorKind
 import com.darkmatter.nodus.testutil.AuthTestEnvironment
 import com.darkmatter.nodus.testutil.FakeResponse
 import com.darkmatter.nodus.testutil.authResponseJson
@@ -40,7 +41,7 @@ class GoogleSignInFlowTest {
 
         val result = env.repository.signInWithGoogle(FakeGoogleSignInProvider(GoogleSignInResult.Error(message)))
 
-        assertEquals(ApiResult.Error(message), result)
+        assertEquals(ApiResult.Error(ErrorKind.Unknown, message = message), result)
         assertTrue(env.engine.requests.isEmpty())
     }
 

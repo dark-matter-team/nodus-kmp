@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
-        // Адреса бекенда з типу збірки (build.gradle.kts): debug локальна, release прод
+        // Адреса бекенда з local.properties (api.baseUrl), див. build.gradle.kts
         ApiConfig.setBaseUrl(BuildConfig.API_BASE_URL)
         requestLocalNetworkAccessForDebug()
 

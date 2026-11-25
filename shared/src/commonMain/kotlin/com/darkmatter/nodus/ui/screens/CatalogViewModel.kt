@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.darkmatter.nodus.core.di.AppContainer
 import com.darkmatter.nodus.core.network.ApiResult
 import com.darkmatter.nodus.data.repository.RoadmapRepository
+import com.darkmatter.nodus.ui.common.userMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,7 @@ class CatalogViewModel(
         viewModelScope.launch {
             _uiState.value = when (val result = repository.getPublicRoadmaps()) {
                 is ApiResult.Success -> CatalogUiState.Success(result.data)
-                is ApiResult.Error -> CatalogUiState.Error(result.message)
+                is ApiResult.Error -> CatalogUiState.Error(result.userMessage())
             }
         }
     }

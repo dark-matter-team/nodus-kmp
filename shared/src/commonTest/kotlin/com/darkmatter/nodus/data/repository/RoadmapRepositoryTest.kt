@@ -1,6 +1,7 @@
 package com.darkmatter.nodus.data.repository
 
 import com.darkmatter.nodus.core.network.ApiResult
+import com.darkmatter.nodus.core.network.ErrorKind
 import com.darkmatter.nodus.data.model.KnowledgeLevel
 import com.darkmatter.nodus.data.model.NodeCategory
 import com.darkmatter.nodus.data.model.NodeStatus
@@ -78,7 +79,7 @@ class RoadmapRepositoryTest {
 
         val result = env.roadmapRepository.getRoadmap("r404")
 
-        assertEquals(ApiResult.Error("Дерево не знайдено", 404), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 404, "Дерево не знайдено"), result)
     }
 
     @Test
@@ -126,6 +127,6 @@ class RoadmapRepositoryTest {
 
         val result = env.roadmapRepository.getMyRoadmaps()
 
-        assertEquals(ApiResult.Error("Не вдалося підключитись до сервера"), result)
+        assertEquals(ApiResult.Error(ErrorKind.Network), result)
     }
 }

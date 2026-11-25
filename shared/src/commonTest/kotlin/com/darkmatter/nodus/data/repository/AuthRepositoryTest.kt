@@ -1,6 +1,7 @@
 package com.darkmatter.nodus.data.repository
 
 import com.darkmatter.nodus.core.network.ApiResult
+import com.darkmatter.nodus.core.network.ErrorKind
 import com.darkmatter.nodus.testutil.AuthTestEnvironment
 import com.darkmatter.nodus.testutil.FakeResponse
 import com.darkmatter.nodus.testutil.authResponseJson
@@ -33,7 +34,7 @@ class AuthRepositoryTest {
         val result = env.repository.register("test1@example.com", "tester1", "Passw0rd!")
 
         assertEquals(
-            ApiResult.Error("Користувач з таким email або нікнеймом вже існує", 400),
+            ApiResult.Error(ErrorKind.Client, 400, "Користувач з таким email або нікнеймом вже існує"),
             result,
         )
     }
@@ -44,7 +45,7 @@ class AuthRepositoryTest {
 
         val result = env.repository.forgotPassword("test1@example.com")
 
-        assertEquals(ApiResult.Error("Помилка сервера: 500", 500), result)
+        assertEquals(ApiResult.Error(ErrorKind.Server, 500), result)
     }
 
     @Test
@@ -53,7 +54,7 @@ class AuthRepositoryTest {
 
         val result = env.repository.resetPassword("test1@example.com", "123456", "Passw0rd!")
 
-        assertEquals(ApiResult.Error("Помилка сервера: 400", 400), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 400), result)
     }
 
     @Test
@@ -86,7 +87,7 @@ class AuthRepositoryTest {
 
         val result = env.repository.login("tester1", "Test1234!")
 
-        assertEquals(ApiResult.Error("Не вдалося підключитись до сервера"), result)
+        assertEquals(ApiResult.Error(ErrorKind.Network), result)
     }
 
     @Test
@@ -155,7 +156,7 @@ class AuthRepositoryTest {
 
         val result = env.repository.loginWithGoogle("bad-id-token")
 
-        assertEquals(ApiResult.Error("Недійсний Google токен", 401), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 401, "Недійсний Google токен"), result)
         assertNull(env.tokenStorage.getToken())
     }
 

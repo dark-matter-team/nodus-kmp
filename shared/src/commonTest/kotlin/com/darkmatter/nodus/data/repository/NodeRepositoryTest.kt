@@ -1,6 +1,7 @@
 package com.darkmatter.nodus.data.repository
 
 import com.darkmatter.nodus.core.network.ApiResult
+import com.darkmatter.nodus.core.network.ErrorKind
 import com.darkmatter.nodus.data.model.ChecklistItemDto
 import com.darkmatter.nodus.data.model.CompleteNodeResponse
 import com.darkmatter.nodus.data.model.CreateNodeRequest
@@ -62,7 +63,7 @@ class NodeRepositoryTest {
 
         val result = env.nodeRepository.completeNode("n2")
 
-        assertEquals(ApiResult.Error("Вузол заблоковано", 400), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 400, "Вузол заблоковано"), result)
     }
 
     @Test
@@ -124,7 +125,7 @@ class NodeRepositoryTest {
 
         val result = env.nodeRepository.deleteNode("n404")
 
-        assertEquals(ApiResult.Error("Вузол не знайдено", 404), result)
+        assertEquals(ApiResult.Error(ErrorKind.Client, 404, "Вузол не знайдено"), result)
         assertEquals(HttpMethod.Delete, env.engine.requests.single().method)
     }
 }

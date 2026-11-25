@@ -34,6 +34,9 @@ kotlin {
         }
         withHostTest {
             isIncludeAndroidResources = true
+            // android.util.Log та інші заглушки Android повертають значення за замовчуванням,
+            // а не кидають "not mocked": логування помилок у apiCall не ламає тести на хості
+            isReturnDefaultValues = true
         }
         withDeviceTestBuilder {
             sourceSetTreeName = "test"

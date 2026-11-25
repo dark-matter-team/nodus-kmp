@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Помилки запитів до бекенда, коли сам бекенд не надіслав тексту (ui/common/ErrorMessages.kt) -->
+    <string name="error_network">Не вдалося підключитись до сервера</string>
+    <string name="error_timeout">Сервер не відповідає. Спробуйте ще раз</string>
+    <string name="error_http">Помилка сервера: %1$d</string>
+    <string name="error_unknown">Щось пішло не так. Спробуйте ще раз</string>
+</resources>
