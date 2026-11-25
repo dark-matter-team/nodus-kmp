@@ -22,6 +22,7 @@ import com.darkmatter.nodus.ui.screens.auth.RegisterScreen
 import com.darkmatter.nodus.ui.screens.auth.VerifyCodeScreen
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
+import com.darkmatter.nodus.ui.shell.AppShell
 
 @Composable
 fun AppNavHost(
@@ -74,6 +75,10 @@ fun AppNavHost(
                 onForgotPassword = { navController.navigate(ForgotPasswordRoute) },
             )
         }
+        composable<MainRoute> {
+            AppShell(onOpenSettings = { navController.navigate(SettingsRoute) })
+        }
+
 
         composable<RegisterRoute> {
             RegisterScreen(
@@ -140,7 +145,7 @@ fun AppNavHost(
  */
 private fun resolveStartDestination(onboardingCompleted: Boolean, isLoggedIn: Boolean): Any = when {
     !onboardingCompleted -> OnboardingRoute
-    isLoggedIn -> CatalogRoute
+    isLoggedIn -> MainRoute
     else -> LoginRoute
 }
 
@@ -153,7 +158,7 @@ private fun NavHostController.navigateToLogin() {
 
 /** Після входу чи реєстрації auth-екрани прибираються зі стеку, щоб "назад" не повертало на них. */
 private fun NavHostController.navigateToMain() {
-    navigate(CatalogRoute) {
+    navigate(MainRoute) {
         popUpTo<LoginRoute> { inclusive = true }
     }
 }
